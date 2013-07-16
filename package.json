@@ -1,0 +1,10 @@
+{
+	"author": "Hadi Michael",
+	"name": "gest.js",
+	"description": "gist.js is a webcam-based gesture recognition library",
+	"version": "1.0.0",
+	"repository": {
+		"type": "git",
+		"url": 
+	},
+}

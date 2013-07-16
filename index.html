@@ -1,0 +1,36 @@
+<!DOCTYPE>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+
+		<title>gist.js | Demo</title>
+
+		<meta name="description" content="gist.js is a webcam-based gesture recognition library">
+		<meta name="author" content="Hadi Michael (http://hadi.io)">
+
+		<style>
+			#comp{
+				position: fixed;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				opacity: 1;
+			}
+		</style>
+	</head>
+
+	<body>
+		<!-- input video -->
+		<video id="video" autoplay width="300"></video>
+		<canvas id="canvas" style="width:300px;"></canvas>
+
+		<!-- delta -->
+		<div id="disp">
+			<canvas id="comp"></canvas>
+		</div>
+		
+		<!-- include js -->
+		<script src="gest.js"></script>
+	</body>
+</html>
