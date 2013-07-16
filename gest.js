@@ -1,6 +1,9 @@
 window.gest = (function () {
 	var framerate = 25;
+	var videoCompressionRate = 5;
+	var width = height = 0;
 
+	//declare DOM elements
 	var video, canvas, context, ccanvas, ccontext;
 
     gest = function () {
@@ -9,11 +12,13 @@ window.gest = (function () {
 		video.id = "video";
 		video.width = 300;
 		video.setAttribute('autoplay', 'autoplay');
+		video.setAttribute('style', 'display: none;');
 		document.body.appendChild(video);
 
 		canvas = document.createElement('canvas');
 		canvas.id = "canvas";
 		canvas.style.width = "300px";
+		canvas.style.display = "none";
 		document.body.appendChild(canvas);
 
 		context = canvas.getContext('2d');
@@ -44,8 +49,8 @@ window.gest = (function () {
 
 		    		video.addEventListener('play',
 						function(){
-							width = Math.floor(video.videoWidth / compressionRate);
-							height = Math.floor(video.videoHeight / compressionRate);
+							width = Math.floor(video.videoWidth / videoCompressionRate);
+							height = Math.floor(video.videoHeight / videoCompressionRate);
 							setInterval(grabVideoFrame, 1000/framerate);
 						}
 					)
@@ -57,11 +62,6 @@ window.gest = (function () {
 		  	//video.src = 'somevideo.webm'; // fallback.
 		}
     };
-
-
-    /************/
-    var compressionRate = 5;
-	var width = height = 300;
 
 	function grabVideoFrame(){
 		//TODO: need to reset the canvas sizes, or else they don't redraw
@@ -79,10 +79,8 @@ window.gest = (function () {
 		checkForGestures(currentFrame)
 	}
 
-	var last 	= false;
-	var thresh 	= 150;
-	var down	= false;
-	var wasdown = false;
+	var last = false;
+	var toleratedMovementThreshold 	= 150;
 
 	function checkForGestures(currentFrame){
 		delt = context.createImageData(width, height);
@@ -93,7 +91,7 @@ window.gest = (function () {
 				totaly 	= 0,
 				totald 	= 0,
 				totaln 	= delt.width * delt.height,
-				dscl 	= 0,
+				//dscl 	= 0,
 				pix 	= totaln * 4;
 
 			while (pix -= 4) {
@@ -102,8 +100,8 @@ window.gest = (function () {
 						Math.abs(currentFrame.data[pix+1] - last.data[pix+1]) + 
 						Math.abs(currentFrame.data[pix+2] - last.data[pix+2]);
 
-				if (d > thresh) {
-					delt.data[pix] 		= 0; //R
+				if (d > toleratedMovementThreshold) {
+					delt.data[pix] 		= 255; //R
 					delt.data[pix+1] 	= 0; //G
 					delt.data[pix+2] 	= 0; //B
 					delt.data[pix+3] 	= 255; //alpha
@@ -112,10 +110,10 @@ window.gest = (function () {
 					totaly += (Math.floor((pix/4) / delt.height));
 				}
 				else {
-					delt.data[pix] 		= 0; //R
-					delt.data[pix+1] 	= 0; //G
-					delt.data[pix+2] 	= 0; //B
-					delt.data[pix+3] 	= 0; //alpha
+					delt.data[pix] 		= currentFrame.data[pix];
+					delt.data[pix+1] 	= currentFrame.data[pix+1];	
+					delt.data[pix+2] 	= currentFrame.data[pix+2];
+					delt.data[pix+3] 	= currentFrame.data[pix+3]; //change to 0 to hide
 				}
 
 			}
@@ -137,6 +135,11 @@ window.gest = (function () {
 		ccontext.putImageData(delt, 0, 0);
 	}
 
+
+	//TODO: from here onwards
+	
+	var down	= false;
+	var wasdown = false;
 	movethresh=2
 	brightthresh=300
 	overthresh=1000
