@@ -10,7 +10,7 @@ window.gest = (function () {
 
     gest = function () {
     	this.options = {
-    		skinFilter: false,
+    		skinFilter: false, //default to false until I have fixed it up...
     	}
 
     	//create the required DOM elements
@@ -75,7 +75,7 @@ window.gest = (function () {
 		  		});
 		} else {
 		  	console.log('getUserMedia is not supported!');
-		  	//video.src = 'somevideo.webm'; // fallback.
+		  	//video.src = 'somevideo.webm'; // define a fallback.
 		}
     };
 

@@ -14,7 +14,7 @@ To start gesture detection, use:
 To stop gesture detection, use:
 <pre><code>gest.stop();</code></pre>
 
-Use event listeners to handle recognised gestures:
+Use event listeners on 'document' to handle recognised gestures:
 <pre><code>document.addEventListener('gestRecognised', function(gesture) {
 	//do something with gesture
 }, false);</code></pre>
