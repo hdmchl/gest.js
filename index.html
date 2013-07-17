@@ -12,5 +12,24 @@
 	<body>
 		<!-- include js -->
 		<script src="gest.js"></script>
+
+		<!-- diplay events on screen for DEMO purposes -->
+		<script type="text/javascript">
+			var div = document.createElement('div');
+			div.id = "mydiv";
+			div.setAttribute('style', 'position: fixed; top: 10px; left: 10px; width: 100px; z-index:100; color: lime; font-size: 35px; font-family: Arial;');
+			document.body.appendChild(div);
+
+			document.addEventListener('gestRecognised', function(gesture) {
+		    	document.getElementById('mydiv').innerHTML = gesture.direction;
+		    	if (gesture.direction === 'left') {
+		    		$('.next').trigger('click');
+		    	} else if (gesture.direction === 'right') {
+		    		$('.prev').trigger('click');
+		    	}
+			}, false);
+
+			gest.start(); //start gesture detection with preview
+		</script>
 	</body>
 </html>
