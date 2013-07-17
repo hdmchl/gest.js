@@ -22,11 +22,6 @@
 
 			document.addEventListener('gestRecognised', function(gesture) {
 		    	document.getElementById('mydiv').innerHTML = gesture.direction;
-		    	if (gesture.direction === 'left') {
-		    		$('.next').trigger('click');
-		    	} else if (gesture.direction === 'right') {
-		    		$('.prev').trigger('click');
-		    	}
 			}, false);
 
 			gest.start(); //start gesture detection with preview
