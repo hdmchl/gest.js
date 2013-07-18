@@ -25,6 +25,7 @@ Toggle debug mode using:
 #TODO
 
 - Improve toggling skin filters
+- Improve FireFox support
 
 #LICENSE (MIT)
 
