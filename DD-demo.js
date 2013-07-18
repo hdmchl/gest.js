@@ -3,7 +3,7 @@
 var head = document.getElementsByTagName('head')[0];
 var script = document.createElement('script');
 script.type = 'text/javascript';
-script.src = 'https://bitbucket.org/hadimichael/gest.js/raw/c05a8313a0255564f22e63132e4fca1d4bfd0cd0/gest.js';
+script.src = 'https://bitbucket.org/hadimichael/gest.js/raw/6c5c23b34792ff0224901879e3e9be4e2e1ebcbc/gest.js';
 
 script.onload = function() { 
 	var div = document.createElement('div');
