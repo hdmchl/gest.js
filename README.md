@@ -1,6 +1,6 @@
 #gest.js
 
-'gest.js' is a webcam-based gesture recognition library.
+gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.
 
 #USAGE
 
