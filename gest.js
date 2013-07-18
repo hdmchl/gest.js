@@ -1,30 +1,65 @@
+/* 
+ * @author: Hadi Michael
+ * @name: gest.js
+ * @version: 0.2.0
+ * @description: gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.
+ */
+
 window.gest = (function () {
+	var startState = false;
 	var framerate = 25;
 	var videoCompressionRate = 5;
-	var toleratedMovementThreshold = 150;
 	var width = height = 0;
 
-	//declare DOM elements
-	var video, canvas, context, ccanvas, ccontext;
-	var gestEvent;
+	var stream;
+	var gestEvent = {
+		direction: null,
+	};
 
+	//declare DOM elements
+	var video, canvas, context, ccanvas, ccontext, messageContainer;
+
+	/* @constructor */
     gest = function () {
+    	//expose and initialise public variables
     	this.options = {
     		skinFilter: false, //default to false until I have fixed it up...
     	}
 
-    	//create the required DOM elements
+    	//check browser support for WebRTC getUserMedia
+		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+		if (!navigator.getUserMedia) {
+			console.log('getUserMedia is not supported!');
+			return false;
+		}
+
+		//init if the dom is already ready
+		if (document.readyState == "complete") { console.log("DOM was ready"); return init(); }
+
+		//wait for DOM to be ready before initialising
+		document.addEventListener( "DOMContentLoaded", DOMready, false );
+		//fallback to window.onload, this will always work
+		window.addEventListener( "load", DOMready, false );
+
+    	//the ready event handler and self cleanup method
+		function DOMready() {
+			document.removeEventListener( "DOMContentLoaded", DOMready, false );
+			window.removeEventListener( "load", DOMready, false );
+			
+			return init();
+		}
+	};
+
+    /* @private */
+    var init = function () {
+    	//create the necessary DOM elements
 		video = document.createElement('video');
-		video.id = "video";
 		video.width = 300;
-		video.setAttribute('autoplay', 'autoplay');
 		video.setAttribute('style', 'visibility: hidden;');
 		document.body.appendChild(video);
 
 		canvas = document.createElement('canvas');
-		canvas.id = "canvas";
-		canvas.style.width = "300px";
-		canvas.style.display = "none";
+		canvas.setAttribute('style', 'width: 300px; display: none;');
 		document.body.appendChild(canvas);
 
 		context = canvas.getContext('2d');
@@ -35,57 +70,104 @@ window.gest = (function () {
 
 		ccontext = ccanvas.getContext('2d');
 
-		//initialise gest events
-		if (document.createEvent) {
-			gestEvent = document.createEvent("HTMLEvents");
-			gestEvent.initEvent("gestRecognised", true, true);
-		} else {
+		//create a messages container
+		messageContainer = document.createElement('div');
+		document.body.appendChild(messageContainer);
+
+		//bind gest.js events to the document for now, 
+		//I'm still undecided on whether I should let devs bind the event to their own elements...
+		if (document.createEventObject) {
+			//IE support, because I can
 			gestEvent = document.createEventObject();
-			gestEvent.eventType = "gestRecognised";
+			gestEvent.eventType = "gest";
+		} else {
+			//all the cool kids
+			gestEvent = document.createEvent("Event");
+			gestEvent.initEvent("gest", true, true);
 		}
-    } 
 
-    var stream;
-    gest.prototype.start = function (preview) {
-    	if (preview) {
+		return true;
+    }
+
+    /* @public */
+    gest.prototype.debug = function (state) {
+    	if (state) {
     		ccanvas.setAttribute('style', "visibility: visible; position: fixed; left: 0; top: 0; width: 100%; height: 100%; opacity: 1;");
+    	} else {
+    		ccanvas.setAttribute('style', "visibility: hidden; position: fixed; left: 0; top: 0; width: 100%; height: 100%; opacity: 1;");
     	}
+    }
 
-    	window.URL = window.URL || window.webkitURL;
-		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+    /* @public */
+    gest.prototype.start = function () {
+    	if (startState) { console.log('gest has already started'); return };
 
-    	if (navigator.getUserMedia) {
+    	startState = true;
+
+		if (navigator.getUserMedia) {
 		  	navigator.getUserMedia(
+		  		// constraints
 		  		{
 		  			audio: false,
 		  			video: true
-		  		}, function(s) {
-		  			stream = s;
+		  		}, 
+
+		  		// successCallback
+		  		function(LocalMediaStream) {
+		  			stream = LocalMediaStream;
+
+		  			window.URL = window.URL || window.webkitURL;
 		    		video.src = window.URL.createObjectURL(stream);
 
-		    		video.addEventListener('play',
+		    		video.addEventListener('canplaythrough',
 						function(){
+							video.play();
+
 							width = Math.floor(video.videoWidth / videoCompressionRate);
 							height = Math.floor(video.videoHeight / videoCompressionRate);
+							
 							setInterval(grabVideoFrame, 1000/framerate);
+
+							newMessage("The force is strong with you. <br /> Go forth and gesture!");
 						}
 					)
-		  		}, function() {
-		  			console.log('DEEEEENIED!');
+		  		}, 
+
+		  		// errorCallback
+		  		function(error) {
+		  			switch(error) {
+		  				case PERMISSION_DENIED:
+		  					console.log('DEEEENIED! The user denied permission to use a media device required for the operation.');
+		  					break;
+
+		  				case NOT_SUPPORTED_ERROR:
+		  					console.log('Error. A constraint specified is not supported by the browser.');
+		  					break;
+
+		  				case MANDATORY_UNSATISFIED_ERROR:
+		  					console.log('Error. No media tracks of the type specified in the constraints are found.');
+		  					break;
+
+		  				default:
+		  					console.log('Error. Couldn\'t get user media.');
+		  			}
+		  			
 		  		});
 		} else {
 		  	console.log('getUserMedia is not supported!');
-		  	//video.src = 'somevideo.webm'; // define a fallback.
+		  	//video.src = 'mydemovideo.webm'; // define a fallback for demo purposes
 		}
     };
 
+    /* @public */
     gest.prototype.stop = function () {
-    	stream.stop();
     	video.src = '';
+    	if (stream.stop) { stream.stop() };
+    	startState = false;
     }
 
-	function grabVideoFrame(){
-		//TODO: need to reset the canvas sizes, or else they don't redraw
+    /* @private */
+	var grabVideoFrame = function (){
 		canvas.width = ccanvas.width = width;
 		canvas.height = ccanvas.height = height;
 
@@ -97,23 +179,22 @@ window.gest = (function () {
 		ccontext.putImageData(currentFrame, 0, 0)
 		
 		if (gest.options.skinFilter) {
-			toleratedMovementThreshold = 250;
-			checkForGestures(skinfilter(currentFrame));
+			getDifferenceMap(skinfilter(currentFrame), 150);
 		} else {
-			toleratedMovementThreshold = 150;
-			checkForGestures(currentFrame);
+			getDifferenceMap(currentFrame, 150);
 		}
 	}
 
-	// set skin filtering parameters
-	var huemin = 0.0;
-	var huemax = 0.10;
-	var satmin = 0.0;
-	var satmax = 1.0;
-	var valmin = 0.4;
-	var valmax = 1.0;
+	/* @private */
+	/* skin filtering */
+	var huemin = 0.0,
+		huemax = 0.10,
+		satmin = 0.0,
+		satmax = 1.0,
+		valmin = 0.4,
+		valmax = 1.0;
 
-	function skinfilter(currentFrame){
+	var skinfilter = function (currentFrame){
 		
 		skin_filter = context.getImageData(0, 0, width, height);
 		var total_pixels = skin_filter.width * skin_filter.height;
@@ -188,8 +269,10 @@ window.gest = (function () {
 	}
 
 	var last = false;
+	/* /skin filtering */
 
-	function checkForGestures(currentFrame){
+	/* @private */
+	var getDifferenceMap = function (currentFrame, toleratedMovementThreshold){
 		delt = context.createImageData(width, height);
 
 		if (last !== false) {
@@ -207,10 +290,10 @@ window.gest = (function () {
 						Math.abs(currentFrame.data[pix+2] - last.data[pix+2]);
 
 				if (d > toleratedMovementThreshold) {
-					delt.data[pix] 		= 255; //R
-					delt.data[pix+1] 	= 0; //G
-					delt.data[pix+2] 	= 0; //B
-					delt.data[pix+3] 	= 255; //alpha
+					delt.data[pix] 		= 255; 	//R
+					delt.data[pix+1] 	= 0; 	//G
+					delt.data[pix+2] 	= 0; 	//B
+					delt.data[pix+3] 	= 255; 	//alpha
 					totald += 1;
 					totalx += ((pix/4) % width);
 					totaly += (Math.floor((pix/4) / delt.height));
@@ -235,7 +318,6 @@ window.gest = (function () {
 		ccontext.putImageData(delt, 0, 0);
 	}
 	
-	//var down = false;
 	var wasdown = false;
 	var movethresh = 2;
 	var brightthresh = 300;
@@ -305,10 +387,12 @@ window.gest = (function () {
 				
 				//console.log(gestEvent.direction);
 				//fire gestevent
-				if (document.createEvent) {
-					document.dispatchEvent(gestEvent);
-				} else {
+				if (document.createEventObject) {
+					//IE 
 					document.fireEvent("on" + gestEvent.eventType, gestEvent);
+				} else {
+					//everyone else
+					document.dispatchEvent(gestEvent);
 				}
 
 				break;
@@ -321,6 +405,27 @@ window.gest = (function () {
 				}
 				break;
 		}
+	}
+
+	/* @private */
+	var newMessage = function(message) {
+		var messageContainerStyle = "visibility: visible; position: fixed; left: 50%; top: 50%; width: 500px; height: 80px; margin-left: -250px; margin-top: -40px; padding: 1%; background-color: #222222; border-radius: 10px; z-index: 100; font-family: Arial; color: #FFFFFF; font-size: 35px; text-align: center;";	
+		var messageContainerOpacity = 1;
+
+		messageContainer.innerHTML = message;
+		messageContainer.setAttribute('style', messageContainerStyle);
+
+		setTimeout(function() {
+			var timer = setInterval(function() {
+				if (messageContainerOpacity-0.1 <= 0) {
+					clearTimeout(timer);
+					messageContainer.setAttribute('style', 'visibility: hidden');
+				} else {
+					messageContainerOpacity -= 0.05;
+					messageContainer.setAttribute('style', 'opacity: ' + messageContainerOpacity + ';' + messageContainerStyle);
+				}
+			}, 50) //fade it out
+		}, 2500) //show message for
 	}
 
     return new gest();
