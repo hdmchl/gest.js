@@ -15,14 +15,16 @@ To stop gesture detection, use:
 <pre><code>gest.stop();</code></pre>
 
 Use event listeners on 'document' to handle recognised gestures:
-<pre><code>document.addEventListener('gestRecognised', function(gesture) {
+<pre><code>document.addEventListener('gest', function(gesture) {
 	//do something with gesture
 }, false);</code></pre>
 
+Toggle debug mode using:
+<pre><code>gest.debug([boolean]);</code></pre>
+
 #TODO
 
-- Improve skin filtering
-- Add options for toggling skin filters, debug mode etc…
+- Improve toggling skin filters
 
 #LICENSE (MIT)
 
