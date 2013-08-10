@@ -36,6 +36,7 @@ Enable/disable on screen messages
 
 #TODO
 
+- Write up proper documentation
 - Better Firefox support...
 
 #LICENSE (MIT)
