@@ -16,7 +16,9 @@ Starting gest.js and handling gestures:
 		//handle gesture .direction .up .down .left .right here...
 		document.getElementById('mydiv').innerHTML = gesture.direction;
 	}
-}, false);</code></pre>
+}, false);
+gest.start();
+</code></pre>
 
 To stop gesture detection, use:
 <pre><code>gest.stop();</code></pre>
