@@ -1,3 +1,8 @@
+#DEMO
+
+Checkout a demo here:
+[http://hadimichael.github.io/gest.js/demo.html](http://hadimichael.github.io/gest.js/demo.html);
+
 #USAGE
 
 You will need to include the 'gest.js' script in your index &lt;head&gt;, using something like:
