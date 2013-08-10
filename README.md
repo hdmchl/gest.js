@@ -8,22 +8,23 @@ You will need to include the 'gest.js' script in your index &lt;head&gt;, using 
 
 <pre><code>&lt;script type="text/javascript" src="gest.js"&gt;&lt;/script&gt;</pre>
 
-To start gesture detection, use:
-<pre><code>gest.start();</code></pre>
+Starting gest.js and handling gestures:
+<pre><code>document.addEventListener('gest', function(gesture) {
+	if (gesture.ready) {
+		gest.start(); //start gesture detection
+	} else {
+		//handle gesture .direction .up .down .left .right here...
+		document.getElementById('mydiv').innerHTML = gesture.direction;
+	}
+}, false);</code></pre>
 
 To stop gesture detection, use:
 <pre><code>gest.stop();</code></pre>
 
-Use event listeners on 'document' to handle recognised gestures:
-<pre><code>document.addEventListener('gest', function(gesture) {
-	//do something with gesture
-	//gesture contains: .direction .up .down .left .right .error
-}, false);</code></pre>
-
 Toggle debug mode using:
 <pre><code>gest.debug([boolean]);</code></pre>
 
-Available options:
+Other available options:
 Enable/disable skin filtering
 <pre><code>gest.options.skinFilter = [boolean]; //default is false</code></pre>
 
