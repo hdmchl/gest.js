@@ -499,7 +499,7 @@ window.gest = (function (document) {
 
 		switch (_code) {
 			case 0:
-				_error = {code: _code, message: 'Sorry, but gest.js does not support your browser! :('}; //getUserMedia is not support by your browser
+				_error = {code: _code, message: 'Sorry, but gest.js does not support your browser! :( <br />Have you tried using Google Chrome?'}; //getUserMedia is not support by your browser
 				break;
 
 			case 1:
