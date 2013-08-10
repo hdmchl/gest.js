@@ -7,34 +7,28 @@
 
 		<meta name = "description" content = "gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.">
 		<meta name = "author" content = "Hadi Michael (http://hadi.io)">
+
+		<!-- include js -->
+		<script src="https://raw.github.com/hadimichael/gest.js/master/gest.min.js"></script>
 	</head>
 
 	<body>
 		<!-- diplay events on screen for DEMO purposes -->
 		<script type="text/javascript">
-			var head = document.getElementsByTagName('head')[0];
-			var script = document.createElement('script');
-			script.type = 'text/javascript';
-			script.src = 'https://raw.github.com/hadimichael/gest.js/master/gest.min.js';
-
-			script.onload = function() { 
-				document.addEventListener('gest', function(gesture) {
-					if (gesture.ready) {
-						gest.start(); //start gesture detection
-					} else {
-						document.getElementById('mydiv').innerHTML = gesture.direction;
-					}
-				}, false);
-
-				gest.start();
-			};
-
-			head.appendChild(script);
-
 			var div = document.createElement('div');
 			div.id = "mydiv";
 			div.setAttribute('style', 'position: fixed; top: 10px; left: 10px; width: 100px; z-index:100; color: lime; font-size: 35px; font-family: Arial;');
 			document.body.appendChild(div);
+
+			document.addEventListener('gest', function(gesture) {
+				if (gesture.ready) {
+					gest.start(); //start gesture detection
+				} else {
+					document.getElementById('mydiv').innerHTML = gesture.direction;
+				}
+			}, false);
+
+			gest.start();
 		</script>
 	</body>
 </html>
