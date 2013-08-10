@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Gest.js : gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Gest.js</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/hadimichael/gest.js">View on GitHub</a>
+
+          <h1 id="project_title">Gest.js</h1>
+          <h2 id="project_tagline">gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/hadimichael/gest.js/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/hadimichael/gest.js/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="gestjs" class="anchor" href="#gestjs"><span class="octicon octicon-link"></span></a>gest.js</h1>
+
+<p>gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.</p>
+
+<h1>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>USAGE</h1>
+
+<p>You will need to include the 'gest.js' script in your index &lt;head&gt;, using something like:</p>
+
+<pre><code>&lt;script type="text/javascript" src="gest.js"&gt;&lt;/script&gt;</code></pre>
+
+<p>Starting gest.js and handling gestures:</p>
+
+<pre><code>document.addEventListener('gest', function(gesture) {
+    if (gesture.ready) {
+        gest.start(); //start gesture detection
+    } else {
+        //handle gesture .direction .up .down .left .right here...
+        document.getElementById('mydiv').innerHTML = gesture.direction;
+    }
+}, false);
+gest.start();
+</code></pre>
+
+<p>To stop gesture detection, use:</p>
+
+<pre><code>gest.stop();</code></pre>
+
+<p>Toggle debug mode using:</p>
+
+<pre><code>gest.debug([boolean]);</code></pre>
+
+<p>Other available options:
+Enable/disable skin filtering</p>
+
+<pre><code>gest.options.skinFilter = [boolean]; //default is false</code></pre>
+
+<p>Enable/disable on screen messages</p>
+
+<pre><code>gest.options.messages = [boolean]; //default is true</code></pre>
+
+<h1>
+<a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>TODO</h1>
+
+<ul>
+<li>Better Firefox support...</li>
+</ul><h1>
+<a name="license-mit" class="anchor" href="#license-mit"><span class="octicon octicon-link"></span></a>LICENSE (MIT)</h1>
+
+<p>Copyright (c) 2013, Hadi Michael (<a href="http://hadi.io">http://hadi.io</a>)</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>
+
+<h2>
+<a name="attribution" class="anchor" href="#attribution"><span class="octicon octicon-link"></span></a>Attribution</h2>
+
+<p>This library was inspired by work from Willy Wu <a href="https://github.com/willy-vvu">https://github.com/willy-vvu</a>.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Gest.js maintained by <a href="https://github.com/hadimichael">hadimichael</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
