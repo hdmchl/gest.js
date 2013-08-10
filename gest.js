@@ -1,43 +1,65 @@
 /* 
- * @author: Hadi Michael
  * @name: gest.js
- * @version: 0.2.0
  * @description: gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.
- */
+ * @version: 0.3.0
+ * @author: Hadi Michael (http://hadi.io)
+ * @license: MIT License
+	The MIT License (MIT)
 
-window.gest = (function () {
-	var startState = false;
-	var framerate = 25;
-	var videoCompressionRate = 5;
-	var width = height = 0;
+	Copyright (c) 2013 Hadi Michael
 
-	var stream;
-	var gestEvent = {
-		direction: null,
-	};
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in
+	all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+	THE SOFTWARE.
+*/
+
+window.gest = (function (document) {
+    //initialise return object
+    var	gestEvent = {},
+	
+	//initialise default settings
+    	settings = {
+			framerate: 25,
+			videoCompressionRate: 5,
+			debug: false //this can be toggled using gest.debug([boolean]);
+		},
+
+	//declare global stream object that we can stop at any point
+		stream,
 
 	//declare DOM elements
-	var video, canvas, context, ccanvas, ccontext, messageContainer;
+		video, canvas, context, ccanvas, ccontext, messageContainer,
+		width = 0,
+		height = 0;
 
 	/* @constructor */
     gest = function () {
-    	//expose and initialise public variables
+    	//initialise and setup public variables (options)
     	this.options = {
-    		skinFilter: false, //default to false until I have fixed it up...
-    	}
-
-    	//check browser support for WebRTC getUserMedia
-		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-		if (!navigator.getUserMedia) {
-			console.log('getUserMedia is not supported!');
-			return false;
-		}
+			skinFilter: false,
+			messages: true
+		};
 
 		//init if the dom is already ready
-		if (document.readyState == "complete") { console.log("DOM was ready"); return init(); }
+		if (document.readyState === "complete") { return init(); }
 
-		//wait for DOM to be ready before initialising
+		//otherwise wait for DOM to be ready before initialising
 		document.addEventListener( "DOMContentLoaded", DOMready, false );
+		
 		//fallback to window.onload, this will always work
 		window.addEventListener( "load", DOMready, false );
 
@@ -46,13 +68,41 @@ window.gest = (function () {
 			document.removeEventListener( "DOMContentLoaded", DOMready, false );
 			window.removeEventListener( "load", DOMready, false );
 			
-			return init();
+			var _ready = false;
+			if (init()) { _ready = true; }
+
+			return dispatchGestEvent( {ready: _ready} );
 		}
+
+		return true;
 	};
 
     /* @private */
     var init = function () {
-    	//create the necessary DOM elements
+    	//bind gest.js events to the document for now, 
+		//I'm still undecided on whether I should let devs bind the event to their own elements...
+		if (document.createEventObject) {
+			//IE support, because I can
+			gestEvent = document.createEventObject();
+			gestEvent.eventType = "gest";
+		} else {
+			//all the cool kids
+			gestEvent = document.createEvent("Event");
+			gestEvent.initEvent("gest", true, true);
+		}
+
+		//create a messages container
+		messageContainer = document.createElement('div');
+		document.body.appendChild(messageContainer);
+
+    	//check browser support for WebRTC getUserMedia
+		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;// || navigator.mozGetUserMedia || navigator.msGetUserMedia; //don't support firefox until I iron out the bugs
+		if (!navigator.getUserMedia) {
+			dispatchErrorEvent(0);
+			return false;
+		}
+
+    	//create and setup the required DOM elements
 		video = document.createElement('video');
 		video.width = 300;
 		video.setAttribute('style', 'visibility: hidden;');
@@ -70,39 +120,29 @@ window.gest = (function () {
 
 		ccontext = ccanvas.getContext('2d');
 
-		//create a messages container
-		messageContainer = document.createElement('div');
-		document.body.appendChild(messageContainer);
-
-		//bind gest.js events to the document for now, 
-		//I'm still undecided on whether I should let devs bind the event to their own elements...
-		if (document.createEventObject) {
-			//IE support, because I can
-			gestEvent = document.createEventObject();
-			gestEvent.eventType = "gest";
-		} else {
-			//all the cool kids
-			gestEvent = document.createEvent("Event");
-			gestEvent.initEvent("gest", true, true);
-		}
-
 		return true;
-    }
+    };
 
     /* @public */
     gest.prototype.debug = function (state) {
+    	if (!navigator.getUserMedia) { return false; }
+
+    	settings.debug = state;
+
     	if (state) {
     		ccanvas.setAttribute('style', "visibility: visible; position: fixed; left: 0; top: 0; width: 100%; height: 100%; opacity: 1;");
     	} else {
     		ccanvas.setAttribute('style', "visibility: hidden; position: fixed; left: 0; top: 0; width: 100%; height: 100%; opacity: 1;");
     	}
-    }
+
+    	return settings.debug;
+    };
 
     /* @public */
     gest.prototype.start = function () {
-    	if (startState) { console.log('gest has already started'); return };
+    	if (!navigator.getUserMedia) { return false; }
 
-    	startState = true;
+    	if (!video || !(video.paused || video.ended || video.seeking || video.readyState < video.HAVE_FUTURE_DATA)) { dispatchErrorEvent(2); return false; }
 
 		if (navigator.getUserMedia) {
 		  	navigator.getUserMedia(
@@ -120,81 +160,81 @@ window.gest = (function () {
 		    		video.src = window.URL.createObjectURL(stream);
 
 		    		video.addEventListener('canplaythrough',
-						function(){
+		    			//play the video once the it can play through
+						function() {
 							video.play();
 
-							width = Math.floor(video.videoWidth / videoCompressionRate);
-							height = Math.floor(video.videoHeight / videoCompressionRate);
+							width = Math.floor(video.videoWidth / settings.videoCompressionRate);
+							height = Math.floor(video.videoHeight / settings.videoCompressionRate);
 							
-							setInterval(grabVideoFrame, 1000/framerate);
+							setInterval(grabVideoFrame, 1000/settings.framerate);
 
-							newMessage("The force is strong with you. <br /> Go forth and gesture!");
+							showMessage("The force is strong with you. <br />Go forth and gesture!");
 						}
-					)
+					);
 		  		}, 
 
 		  		// errorCallback
 		  		function(error) {
-		  			switch(error) {
-		  				case PERMISSION_DENIED:
-		  					console.log('DEEEENIED! The user denied permission to use a media device required for the operation.');
-		  					break;
-
-		  				case NOT_SUPPORTED_ERROR:
-		  					console.log('Error. A constraint specified is not supported by the browser.');
-		  					break;
-
-		  				case MANDATORY_UNSATISFIED_ERROR:
-		  					console.log('Error. No media tracks of the type specified in the constraints are found.');
-		  					break;
-
-		  				default:
-		  					console.log('Error. Couldn\'t get user media.');
-		  			}
-		  			
+		  			if (error.PERMISSION_DENIED) {
+		  				dispatchErrorEvent(10, error);
+		  			} else if (error.NOT_SUPPORTED_ERROR) {
+		  				dispatchErrorEvent(11, error);
+		  			} else if (error.MANDATORY_UNSATISFIED_ERROR) {
+		  				dispatchErrorEvent(12, error);
+		  			} else {
+		  				dispatchErrorEvent(13, error);
+		  			}	
 		  		});
 		} else {
-		  	console.log('getUserMedia is not supported!');
-		  	//video.src = 'mydemovideo.webm'; // define a fallback for demo purposes
+		  	dispatchErrorEvent(0);
+		  	//video.src = 'myfallbackvideo.webm'; // define a fallback for demo purposes
 		}
+
+		return !!navigator.getUserMedia;
     };
 
     /* @public */
     gest.prototype.stop = function () {
-    	video.src = '';
-    	if (stream.stop) { stream.stop() };
-    	startState = false;
-    }
+    	if (!navigator.getUserMedia) { return false; }
+
+    	if (video) { video.src = ''; }
+    	return !!stream.stop();
+    };
 
     /* @private */
 	var grabVideoFrame = function (){
-		canvas.width = ccanvas.width = width;
-		canvas.height = ccanvas.height = height;
+		canvas.width = width;
+		ccanvas.width = width;
+		canvas.height = height;
+		ccanvas.height = height;
 
 		//draw mirrored frame into context
 		context.drawImage(video, width, 0, -width, height);
 		
 		//copy the context into our processing context
 		var currentFrame = context.getImageData(0, 0, width, height);
-		ccontext.putImageData(currentFrame, 0, 0)
+		ccontext.putImageData(currentFrame, 0, 0);
 		
 		if (gest.options.skinFilter) {
 			getDifferenceMap(skinfilter(currentFrame), 150);
 		} else {
 			getDifferenceMap(currentFrame, 150);
 		}
-	}
+	};
 
 	/* @private */
-	/* skin filtering */
+	/* skin filtering using HUE (colour) SATURATION (dominance of the colour) VALUE (brightness of the colour) 
+	 * this algorithms reliability is heavily dependant on lighting conditions - see this journal article http://wwwsst.ums.edu.my/data/file/Su7YcHiV9AK5.pdf
+	 */
 	var huemin = 0.0,
-		huemax = 0.10,
-		satmin = 0.0,
+		huemax = 0.1,
+		satmin = 0.3,
 		satmax = 1.0,
 		valmin = 0.4,
 		valmax = 1.0;
 
-	var skinfilter = function (currentFrame){
+	var skinfilter = function(currentFrame) {
 		
 		skin_filter = context.getImageData(0, 0, width, height);
 		var total_pixels = skin_filter.width * skin_filter.height;
@@ -225,9 +265,9 @@ window.gest = (function () {
 		        	
 		        	} else {
 		        	
-		        	skin_filter.data[count_data_big_array] 	 = 0;
-					skin_filter.data[count_data_big_array+1] = 0;
-					skin_filter.data[count_data_big_array+2] = 0; 
+		        	skin_filter.data[count_data_big_array] 	 = 255;
+					skin_filter.data[count_data_big_array+1] = 255;
+					skin_filter.data[count_data_big_array+2] = 255; 
 					skin_filter.data[count_data_big_array+3] = 0;
 		        	
 		        	}
@@ -237,7 +277,7 @@ window.gest = (function () {
 		}
 
 		return skin_filter;
-	}
+	};
 
 	function rgb2Hsv(r, g, b){
 	    r = r / 255;
@@ -251,16 +291,24 @@ window.gest = (function () {
 
 	    var d = max - min;
 
-	    s = max == 0 ? 0 : d / max;
+	    s = max === 0 ? 0 : d / max;
 
-	    if(max == min){
+	    if (max == min) {
 	        h = 0; // achromatic
-	    }else{
+	    } else {
 
 	        switch(max){
-	            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-	            case g: h = (b - r) / d + 2; break;
-	            case b: h = (r - g) / d + 4; break;
+	            case r: 
+	            	h = (g - b) / d + (g < b ? 6 : 0);
+	            	break;
+	            case g: 
+	            	h = (b - r) / d + 2; 
+	            	break;
+	            case b: 
+	            	h = (r - g) / d + 4; 
+	            	break;
+	            default:
+	            	break;
 	    	}
 	   		h /= 6;
 	   	}
@@ -268,10 +316,9 @@ window.gest = (function () {
 	    return [h, s, v];
 	}
 
-	var last = false;
-	/* /skin filtering */
-
 	/* @private */
+	/* get pixel difference map */
+	var last = false;
 	var getDifferenceMap = function (currentFrame, toleratedMovementThreshold){
 		delt = context.createImageData(width, height);
 
@@ -297,8 +344,7 @@ window.gest = (function () {
 					totald += 1;
 					totalx += ((pix/4) % width);
 					totaly += (Math.floor((pix/4) / delt.height));
-				}
-				else {
+				} else {
 					delt.data[pix] 		= currentFrame.data[pix];
 					delt.data[pix+1] 	= currentFrame.data[pix+1];	
 					delt.data[pix+2] 	= currentFrame.data[pix+2];
@@ -309,27 +355,28 @@ window.gest = (function () {
 		}
 
 		if (totald) {
-			//if some movement has been detected
+			//if enough movement has been detected
 			handle( {x: totalx, y: totaly, d: totald} );
 		}
 
 		//console.log(totald);
 		last = currentFrame;
 		ccontext.putImageData(delt, 0, 0);
-	}
-	
-	var wasdown = false;
-	var movethresh = 2;
-	var brightthresh = 300;
-	var overthresh = 1000;
-	var avg = 0
-	var state = 0; //States: 0 waiting for gesture, 1 waiting for next move after gesture, 2 waiting for gesture to end
+	};
+
+	/* handle any movements that exceed the speficified thresholds */
+	var wasdown = false,
+		movethresh = 2,
+		brightthresh = 300,
+		overthresh = 1000,
+		avg = 0,
+		state = 0; //States: 0 waiting for gesture, 1 waiting for next move after gesture, 2 waiting for gesture to end
 
 	function handle(movement){
 		var down = {
 			x: movement.x / movement.d,
 			y: movement.y / movement.d,
-			d: movement.d,
+			d: movement.d
 		};
 
 		avg = (0.9 * avg) + (0.1 * down.d);
@@ -337,8 +384,7 @@ window.gest = (function () {
 		var davg = down.d - avg,
 			good = davg > brightthresh;
 
-		//console.log(davg)
-		var direction = null;
+		//console.log(davg);
 
 		switch(state){
 			case 0:
@@ -349,7 +395,7 @@ window.gest = (function () {
 						x: down.x,
 						y: down.y,
 						d: down.d
-					}
+					};
 				}
 				break;
 			
@@ -363,38 +409,46 @@ window.gest = (function () {
 				var dirx = Math.abs(dy) < Math.abs(dx); //(dx,dy) is on a bowtie
 				
 				//console.log(good,davg)
-				if (dx < -movethresh && dirx) {
-					gestEvent.direction = 'left';
+				if (dx < -movethresh && dirx) {	
+					dispatchGestEvent({
+						direction: 'Left',
+						left: true
+					});
 				} else if (dx > movethresh && dirx) {
-					gestEvent.direction = 'right';
+					dispatchGestEvent({
+						direction: 'Right',
+						right: true
+					});
 				}
 
 				if (dy > movethresh && !dirx) {
-					if(davg > overthresh){
-						gestEvent.direction = 'long down';
+					if (davg > overthresh) {
+						dispatchGestEvent({
+							direction: 'Long down',
+							down: true
+						});
+					} else {
+						dispatchGestEvent({
+							direction: 'Down',
+							down: true
+						});
 					}
-					else{
-						gestEvent.direction = 'down';
-					}
-				} else if(dy < -movethresh && !dirx) {
-					if(davg > overthresh){
-						gestEvent.direction = 'long up';
-					}
-					else{
-						gestEvent.direction = 'up';
+				} else if (dy < -movethresh && !dirx) {
+					if (davg > overthresh) {
+						dispatchGestEvent({
+							direction: 'Long up',
+							up: true
+						});
+					} else {
+						dispatchGestEvent({
+							direction: 'Up',
+							up: true
+						});
 					}
 				}
 				
-				//console.log(gestEvent.direction);
-				//fire gestevent
-				if (document.createEventObject) {
-					//IE 
-					document.fireEvent("on" + gestEvent.eventType, gestEvent);
-				} else {
-					//everyone else
-					document.dispatchEvent(gestEvent);
-				}
-
+				showMessage('<span style="line-height: 80px; vertical-align: middle;">' + gestEvent.direction + '</span>', 50);
+				
 				break;
 
 			case 2:
@@ -404,29 +458,121 @@ window.gest = (function () {
 					state = 0;
 				}
 				break;
+
+			default:
+				break;
 		}
 	}
 
 	/* @private */
-	var newMessage = function(message) {
-		var messageContainerStyle = "visibility: visible; position: fixed; left: 50%; top: 50%; width: 500px; height: 80px; margin-left: -250px; margin-top: -40px; padding: 1%; background-color: #222222; border-radius: 10px; z-index: 100; font-family: Arial; color: #FFFFFF; font-size: 35px; text-align: center;";	
+	var dispatchGestEvent = function(_gestEvent) {
+		//console.log(_gestEvent);
+
+		//intialise the event object
+		gestEvent.direction = _gestEvent.direction || null;
+		gestEvent.up = _gestEvent.up || false;
+		gestEvent.down = _gestEvent.down || false;
+		gestEvent.left = _gestEvent.left || false;
+		gestEvent.right = _gestEvent.right || false;
+		gestEvent.error = _gestEvent.error || null;
+		gestEvent.ready = _gestEvent.ready || false;
+
+		//fire gestEvent
+		try {
+			if (document.createEventObject) {
+				//IE 
+				return document.fireEvent("on" + gestEvent.eventType, gestEvent);
+			} else {
+				//everyone else
+				return document.dispatchEvent(gestEvent);
+			}
+		} catch (e) {
+			console.log(gestEvent);
+			console.error(e);
+			return false;
+		}
+	};
+
+	/* @private */
+	var dispatchErrorEvent = function(_code, _obj) {
+		// setup up error codes
+
+		switch (_code) {
+			case 0:
+				_error = {code: _code, message: 'Sorry, but gest.js does not support your browser! :('}; //getUserMedia is not support by your browser
+				break;
+
+			case 1:
+				_error = {code: _code, message: 'gest.js could not start.'};
+				break;
+
+			case 2:
+				_error = {code: _code, message: 'gest has already started.'};
+				break;
+
+			case 10:
+				_error = {code: _code, message: 'DEEEENIED! The user denied permission to use a media device required for the operation.', obj: _obj};
+				break;
+
+			case 11:
+				_error = {code: _code, message: 'A constraint specified is not supported by the browser.', obj: _obj};
+				break;
+
+			case 12:
+				_error = {code: _code, message: 'No media tracks of the type specified in the constraints are found.', obj: _obj};
+				break;
+			
+			case 13:
+				_error = {code: _code, message: 'Couldn\'t get user media.', obj: _obj};
+				break;
+
+			default:
+				_error = null;
+				break;
+		}
+
+		//tell the developer about the error
+		if (settings.debug) { console.error(_error); }
+		showMessage(_error.message, 4000);
+		dispatchGestEvent( {error: _error} );
+	};
+
+	/* @private */
+	var messageTimout = null,
+		messageTimer = null,
+		messageLocked = false;
+	var	showMessage = function(HTMLmessage, _duration) {
+		if (!gest.options.messages || !HTMLmessage) { return false; }
+		if (messageLocked) { messageLocked = true; return false; } //don't interrupt longer messages, these need to be read
+		
+		var duration = _duration || 2500;
+
+		window.clearTimeout(messageTimout);
+		window.clearInterval(messageTimer);
+	
+		var messageContainerStyle = "visibility: visible; position: fixed; left: 50%; top: 50%; width: 500px; min-height: 80px; margin-left: -250px; margin-top: -40px; padding: 1%; background-color: #222222; border-radius: 10px; z-index: 100; font-family: Arial; color: #FFFFFF; font-size: 35px; text-align: center;";	
 		var messageContainerOpacity = 1;
 
-		messageContainer.innerHTML = message;
+		messageContainer.innerHTML = HTMLmessage;
 		messageContainer.setAttribute('style', messageContainerStyle);
 
-		setTimeout(function() {
-			var timer = setInterval(function() {
+		messageTimout = window.setTimeout(function() {
+			messageTimer = window.setInterval(function() {
 				if (messageContainerOpacity-0.1 <= 0) {
-					clearTimeout(timer);
+					window.clearInterval(messageTimer);
 					messageContainer.setAttribute('style', 'visibility: hidden');
 				} else {
 					messageContainerOpacity -= 0.05;
 					messageContainer.setAttribute('style', 'opacity: ' + messageContainerOpacity + ';' + messageContainerStyle);
 				}
-			}, 50) //fade it out
-		}, 2500) //show message for
-	}
+				messageLocked = false;
+			}, 40); //fade it out
+		}, duration); //show message for
+
+		if (duration >= 2000) { messageLocked = true; }
+
+		return true;
+	};
 
     return new gest();
-}());
+}(document));

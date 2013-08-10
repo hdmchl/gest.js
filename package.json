@@ -2,7 +2,7 @@
 	"author": "Hadi Michael",
 	"name": "gest.js",
 	"description": "gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"repository": {
 		"type": "git",
 		"url": "http://bitbucket.org/hadimichael/gest.js",

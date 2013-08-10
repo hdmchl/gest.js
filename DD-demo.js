@@ -6,15 +6,10 @@ script.type = 'text/javascript';
 script.src = 'https://bitbucket.org/hadimichael/gest.js/raw/6c5c23b34792ff0224901879e3e9be4e2e1ebcbc/gest.js';
 
 script.onload = function() { 
-	var div = document.createElement('div');
-	div.setAttribute('style', 'position: fixed; top: 10px; left: 10px; width: 100px; z-index:100; color: lime; font-size: 35px; font-family: Arial;');
-	document.body.appendChild(div);
-	
 	document.addEventListener('gest', function(gesture) {
-		div.innerHTML = gesture.direction;
-		if (gesture.direction === 'left') {
+		if (gesture.left) {
 			$('.next').trigger('click');
-		} else if (gesture.direction === 'right') {
+		} else if (gesture.right) {
 			$('.prev').trigger('click');
 		}
 	}, false);

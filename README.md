@@ -17,15 +17,22 @@ To stop gesture detection, use:
 Use event listeners on 'document' to handle recognised gestures:
 <pre><code>document.addEventListener('gest', function(gesture) {
 	//do something with gesture
+	//gesture contains: .direction .up .down .left .right .error
 }, false);</code></pre>
 
 Toggle debug mode using:
 <pre><code>gest.debug([boolean]);</code></pre>
 
+Available options:
+Enable/disable skin filtering
+<pre><code>gest.options.skinFilter = [boolean]; //default is false</code></pre>
+
+Enable/disable on screen messages
+<pre><code>gest.options.messages = [boolean]; //default is true</code></pre>
+
 #TODO
 
-- Improve toggling skin filters
-- Improve FireFox support
+- Better Firefox support...
 
 #LICENSE (MIT)
 
