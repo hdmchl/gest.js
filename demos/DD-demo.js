@@ -1,4 +1,4 @@
-/* This demo allows the user to control the image carousel on Deloitte Digital's homepage using mid-air hand gestures.
+/* This demo uses gest.js to allow the user to control the image carousel on Deloitte Digital's homepage using mid-air hand gestures.
  *
  * Open Chrome and go to http://www.deloittedigital.com.au
  * Open the JavaScript console. On Windows: CTRL-SHIFT-J and on Mac ALT-⌘-J
@@ -12,14 +12,10 @@ script.src = 'https://raw.github.com/hadimichael/gest.js/master/gest.min.js';
 
 script.onload = function() { 
 	document.addEventListener('gest', function(gesture) {
-		if (gesture.ready) {
-			gest.start(); //start gesture detection
-		} else {
-			if (gesture.left) {
-				$('.next').trigger('click');
-			} else if (gesture.right) {
-				$('.prev').trigger('click');
-			}
+		if (gesture.left) {
+			$('.next').trigger('click');
+		} else if (gesture.right) {
+			$('.prev').trigger('click');
 		}
 	}, false);
 
