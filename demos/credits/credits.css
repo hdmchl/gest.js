@@ -1,0 +1,39 @@
+header {
+	font: normal 15px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;
+	color: #333;
+	background: white;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 60px;
+}
+
+header img {
+	border: 0;
+	border-radius: 4px;
+	float: left;
+	width: 45px;
+	height: 45px;
+	margin: 7.5px;
+}
+
+header p {
+	line-height: 60px;
+	vertical-align: middle;
+}
+
+header a {
+	font-weight: bold;
+	color: #d22929;
+}
+
+.demo {
+	position: absolute;
+	left: 40%;
+	top: 0;
+}
+
+.demo strong {
+	margin-right: 4px;
+}
