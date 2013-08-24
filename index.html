@@ -1,86 +1,131 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Gest.js : gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive." />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Gest.js by hadimichael</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>Gest.js</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
-
   <body>
+    <div class="wrapper">
+      <header>
+        <h1>Gest.js</h1>
+        <p>gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.</p>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/hadimichael/gest.js">View on GitHub</a>
+        <p class="view"><a href="https://github.com/hadimichael/gest.js">View the Project on GitHub <small>hadimichael/gest.js</small></a></p>
 
-          <h1 id="project_title">Gest.js</h1>
-          <h2 id="project_tagline">gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.</h2>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/hadimichael/gest.js/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/hadimichael/gest.js/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
+        <ul>
+          <li><a href="https://github.com/hadimichael/gest.js/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/hadimichael/gest.js/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/hadimichael/gest.js">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
         <h1>
-<a name="demo" class="anchor" href="#demo"><span class="octicon octicon-link"></span></a>DEMO</h1>
+<a name="live-preview-and-demos" class="anchor" href="#live-preview-and-demos"><span class="octicon octicon-link"></span></a>LIVE PREVIEW and DEMOS</h1>
 
-<p>Checkout a demo here:
-<a href="http://hadimichael.github.io/gest.js/demo.html">http://hadimichael.github.io/gest.js/demo.html</a>;</p>
+<p>A simple gest.js Demo that display the gesture direction on screen: <a href="http://hadimichael.github.io/gest.js/demos/simple/index.html">http://hadimichael.github.io/gest.js/demos/simple/index.html</a></p>
+
+<p>Using gest.js to control <a href="http://www.slidesjs.com/">Nathan Searles' SlideJS</a>: <a href="http://hadimichael.github.io/gest.js/demos/slidejs/index.html">http://hadimichael.github.io/gest.js/demos/slidejs/index.html</a></p>
 
 <h1>
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>USAGE</h1>
 
-<p>You will need to include the 'gest.js' script in your index &lt;head&gt;, using something like:</p>
+<h2>
+<a name="include-the-library-gestjs" class="anchor" href="#include-the-library-gestjs"><span class="octicon octicon-link"></span></a>Include the library (gest.js)</h2>
 
-<pre><code>&lt;script type="text/javascript" src="gest.js"&gt;&lt;/script&gt;</code></pre>
+<p>You will need to include the 'gest.js' script using something like:</p>
 
-<p>Starting gest.js and handling gestures:</p>
+<p><code>&lt;script type="text/javascript" src="gest.min.js"&gt;&lt;/script&gt;</code></p>
+
+<h2>
+<a name="start-gesture-detection" class="anchor" href="#start-gesture-detection"><span class="octicon octicon-link"></span></a>Start gesture detection</h2>
+
+<p>You can start gest.js by calling:
+<code>gest.start();</code></p>
+
+<h2>
+<a name="listening-for-recognised-gestures" class="anchor" href="#listening-for-recognised-gestures"><span class="octicon octicon-link"></span></a>Listening for recognised gestures</h2>
+
+<p>You will need to register an event listener on the <code>document</code> for <code>gest</code> using:</p>
 
 <pre><code>document.addEventListener('gest', function(gesture) {
-    if (gesture.ready) {
-        gest.start(); //start gesture detection
-    } else {
-        //handle gesture .direction .up .down .left .right here...
-        document.getElementById('mydiv').innerHTML = gesture.direction;
-    }
+    //handle gesture .direction .up .down .left .right
 }, false);
-gest.start();
 </code></pre>
 
-<p>To stop gesture detection, use:</p>
+<h2>
+<a name="how-to-handle-recognised-gestures" class="anchor" href="#how-to-handle-recognised-gestures"><span class="octicon octicon-link"></span></a>How to handle recognised gestures</h2>
 
-<pre><code>gest.stop();</code></pre>
+<p>On every event, you will be passed a <code>gesture</code> object that contains:</p>
 
-<p>Toggle debug mode using:</p>
+<ul>
+<li>
+<code>.direction</code> the recognised gesture in words as a string</li>
+<li>
+<code>.up</code> boolean, true if the recognised gesture is up</li>
+<li>
+<code>.down</code> boolean, true if the recognised gesture is down</li>
+<li>
+<code>.left</code> boolean, true if the recognised gesture is left</li>
+<li>
+<code>.right</code> boolean, true if the recognised gesture is right</li>
+<li>
+<code>.error</code> an error object with...
 
-<pre><code>gest.debug([boolean]);</code></pre>
+<ul>
+<li>
+<code>.code</code> a code as an int</li>
+<li>
+<code>.message</code> and a message as a string</li>
+</ul>
+</li>
+</ul><h2>
+<a name="stop-gesture-detection" class="anchor" href="#stop-gesture-detection"><span class="octicon octicon-link"></span></a>Stop gesture detection</h2>
 
-<p>Other available options:
-Enable/disable skin filtering</p>
+<p>You can stop gest.js at any time by calling:
+<code>gest.stop();</code></p>
 
-<pre><code>gest.options.skinFilter = [boolean]; //default is false</code></pre>
+<h2>
+<a name="using-options" class="anchor" href="#using-options"><span class="octicon octicon-link"></span></a>Using Options</h2>
 
-<p>Enable/disable on screen messages</p>
+<h3>
+<a name="skin-filtering-off-by-default" class="anchor" href="#skin-filtering-off-by-default"><span class="octicon octicon-link"></span></a>Skin Filtering (off by default)</h3>
 
-<pre><code>gest.options.messages = [boolean]; //default is true</code></pre>
+<p>To improve recognition, you may choose to enable HSV skin filtering. You can do so by using:
+<code>gest.options.skinFilter = true;</code></p>
+
+<h3>
+<a name="messages-on-by-default" class="anchor" href="#messages-on-by-default"><span class="octicon octicon-link"></span></a>Messages (on by default)</h3>
+
+<p>gest.js shows on screen messages as user feedback, you can control these using:
+<code>gest.options.messages = false;</code></p>
+
+<h3>
+<a name="debugging-off-by-default" class="anchor" href="#debugging-off-by-default"><span class="octicon octicon-link"></span></a>Debugging (off by default)</h3>
+
+<p>In order to view the video stream and enable <code>console.log(…)</code> messages, you will need to toggle debugging using:
+<code>gest.options.debug(true);</code></p>
 
 <h1>
 <a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>TODO</h1>
 
 <ul>
-<li>Write up proper documentation</li>
 <li>Better Firefox support...</li>
+<li>bespoke.js plugin</li>
 </ul><h1>
+<a name="acknowledgements" class="anchor" href="#acknowledgements"><span class="octicon octicon-link"></span></a>Acknowledgements</h1>
+
+<p>gest.js is an extension of work started by William Wu <a href="https://github.com/willy-vvu">https://github.com/willy-vvu</a>.</p>
+
+<h1>
 <a name="license-mit" class="anchor" href="#license-mit"><span class="octicon octicon-link"></span></a>LICENSE (MIT)</h1>
 
 <p>Copyright (c) 2013, Hadi Michael (<a href="http://hadi.io">http://hadi.io</a>)</p>
@@ -102,23 +147,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.</p>
-
-<h2>
-<a name="attribution" class="anchor" href="#attribution"><span class="octicon octicon-link"></span></a>Attribution</h2>
-
-<p>This library was inspired by work from Willy Wu <a href="https://github.com/willy-vvu">https://github.com/willy-vvu</a>.</p>
       </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Gest.js maintained by <a href="https://github.com/hadimichael">hadimichael</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/hadimichael">hadimichael</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
     </div>
-
+    <script src="javascripts/scale.fix.js"></script>
     
-
   </body>
 </html>
