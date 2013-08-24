@@ -8,7 +8,7 @@
 var head = document.getElementsByTagName('head')[0];
 var script = document.createElement('script');
 script.type = 'text/javascript';
-script.src = 'https://raw.github.com/hadimichael/gest.js/master/gest.min.js';
+script.src = 'https://raw.github.com/hadimichael/gest.js/master/src/gest.min.js';
 
 script.onload = function() { 
 	document.addEventListener('gest', function(gesture) {
