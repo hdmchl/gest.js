@@ -1,8 +1,8 @@
 #LIVE PREVIEW and DEMOS
 
-Simple Demo: [http://hadimichael.github.io/gest.js/demos/simple/index.html](http://hadimichael.github.io/gest.js/demos/simple/index.html)
+A simple gest.js Demo that display the gesture direction on screen: [http://hadimichael.github.io/gest.js/demos/simple/index.html](http://hadimichael.github.io/gest.js/demos/simple/index.html)
 
-Using gest.js to control SlideJS: [http://hadimichael.github.io/gest.js/demos/slidejs/index.html](http://hadimichael.github.io/gest.js/demos/slidejs/index.html)
+Using gest.js to control [Nathan Searles' SlideJS](http://www.slidesjs.com/): [http://hadimichael.github.io/gest.js/demos/slidejs/index.html](http://hadimichael.github.io/gest.js/demos/slidejs/index.html)
 
 #USAGE
 
@@ -39,7 +39,6 @@ You can stop gest.js at any time by calling:
 <code>gest.stop();</code>
 
 ##Using Options
-gest.js offers a few options
 
 ###Skin Filtering (off by default)
 To improve recognition, you may choose to enable HSV skin filtering. You can do so by using:
