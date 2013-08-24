@@ -1,8 +1,9 @@
 /* 
  * @name: gest.js
  * @description: gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.
- * @version: 0.3.1
+ * @version: 0.4.1
  * @author: Hadi Michael (http://hadi.io)
+ * @acknowledgements: gest.js is an extension of work started by William Wu (https://github.com/wvvvw)
  * @license: MIT License
 	The MIT License (MIT)
 
@@ -28,50 +29,115 @@
 */
 
 window.gest = (function (document) {
-    //initialise return object
-    var	gestEvent = {},
+    //initialise the return object
+    var	gestEvent = {};
+
+    //setup getUserMedia
+    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;// || navigator.mozGetUserMedia; //|| navigator.msGetUserMedia; //I can't support firefox until I iron out some bugs
 	
 	//initialise default settings
-    	settings = {
+    var	settings = {
 			framerate: 25,
 			videoCompressionRate: 5,
-			debug: false //this can be toggled using gest.debug([boolean]);
-		},
+			debug: false
+		};
+
+	//manage gest's run states - I do this is to keep track of what the user wants to do and where gest is up to in it's initialisation
+	var gestIsInitialised = false;
+	var userHasAskedToStart = false;
 
 	//declare global stream object that we can stop at any point
-		stream,
+	var	stream;
 
 	//declare DOM elements
-		video, canvas, context, ccanvas, ccontext, messageContainer,
+	var	video, canvas, context, ccanvas, ccontext, messageContainer,
 		width = 0,
 		height = 0;
+
+	/* @private */
+	var dispatchGestEvent = function(_gestEvent) {
+		//console.log(_gestEvent);
+
+		//intialise the event object
+		gestEvent.direction = _gestEvent.direction || null; //direction as a string, ex. left, right, up, down
+		gestEvent.up = _gestEvent.up || false; 				//bool
+		gestEvent.down = _gestEvent.down || false; 			//bool
+		gestEvent.left = _gestEvent.left || false; 			//bool
+		gestEvent.right = _gestEvent.right || false; 		//bool
+		gestEvent.error = _gestEvent.error || null; 		//error message as an object {error, message}
+
+		//fire gestEvent
+		try {
+			if (document.createEventObject) {
+				//IE 
+				return document.fireEvent("on" + gestEvent.eventType, gestEvent);
+			} else {
+				//everyone else
+				return document.dispatchEvent(gestEvent);
+			}
+		} catch (e) {
+			console.error(e);
+			console.log(gestEvent);
+			return false;
+		}
+	};
 
 	/* @constructor */
     gest = function () {
     	//initialise and setup public variables (options)
     	this.options = {
-			skinFilter: false,
-			messages: true
+			skinFilter: false,	//do not do skin filtering by default
+			messages: true, 	//show on screen messages by default
+			debug: function(state) {
+		    	settings.debug = state;
+
+		    	if (state) {
+		    		//show debugging options, such as the video stream
+		    		ccanvas.setAttribute('style', "visibility: visible; position: fixed; left: 0; top: 0; width: 100%; height: 100%; opacity: 1;");
+		    	} else {
+		    		ccanvas.setAttribute('style', "visibility: hidden; position: fixed; left: 0; top: 0; width: 100%; height: 100%; opacity: 1;");
+		    	}
+
+		    	return settings.debug;
+			} 		
 		};
 
-		//init if the dom is already ready
-		if (document.readyState === "complete") { DOMready(); }
-
-		//otherwise wait for DOM to be ready before initialising
-		document.addEventListener( "DOMContentLoaded", DOMready, false );
-		
-		//fallback to window.onload, this will always work
-		window.addEventListener( "load", DOMready, false );
+		//check if the dom is already ready
+		if (document.readyState === "complete") { 
+			DOMready(); 
+		} else {
+			//otherwise wait for DOM to be ready before initialising
+			document.addEventListener( "DOMContentLoaded", DOMready, false );
+			
+			//fallback to window.onload, this will always work
+			window.addEventListener( "load", DOMready, false );
+		}
 
     	//the ready event handler and self cleanup method
 		function DOMready() {
 			document.removeEventListener( "DOMContentLoaded", DOMready, false );
 			window.removeEventListener( "load", DOMready, false );
 			
-			var _ready = false;
-			if (init()) { _ready = true; }
+			//bind gest.js events to the document, we need to do this ASAP so we can open means of communication with the front-end
+				//(I'm open to suggestions as to whether I should let dev's bind the event to their own elements)
+			if (document.createEventObject) {
+				//IE support
+				gestEvent = document.createEventObject();
+				gestEvent.eventType = "gest";
+			} else {
+				//all the cool kids
+				gestEvent = document.createEvent("Event");
+				gestEvent.initEvent("gest", true, true);
+			}
 
-			return dispatchGestEvent( {ready: _ready} );
+			//we need to call and wait for init to finish before we know that we are actually ready
+			if (init()) { gestIsInitialised = true; }
+
+			if (userHasAskedToStart && gestIsInitialised) { 
+				return gest.start();
+			} else {
+				return gestIsInitialised;
+			}
 		}
 
 		return true;
@@ -79,26 +145,13 @@ window.gest = (function (document) {
 
     /* @private */
     var init = function () {
-    	//bind gest.js events to the document for now, 
-		//I'm still undecided on whether I should let devs bind the event to their own elements...
-		if (document.createEventObject) {
-			//IE support, because I can
-			gestEvent = document.createEventObject();
-			gestEvent.eventType = "gest";
-		} else {
-			//all the cool kids
-			gestEvent = document.createEvent("Event");
-			gestEvent.initEvent("gest", true, true);
-		}
-
 		//create a messages container
 		messageContainer = document.createElement('div');
 		document.body.appendChild(messageContainer);
 
     	//check browser support for WebRTC getUserMedia
-		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;// || navigator.mozGetUserMedia || navigator.msGetUserMedia; //don't support firefox until I iron out the bugs
 		if (!navigator.getUserMedia) {
-			dispatchErrorEvent(0);
+			throwError(0);
 			return false;
 		}
 
@@ -124,25 +177,12 @@ window.gest = (function (document) {
     };
 
     /* @public */
-    gest.prototype.debug = function (state) {
-    	if (!navigator.getUserMedia) { return false; }
-
-    	settings.debug = state;
-
-    	if (state) {
-    		ccanvas.setAttribute('style', "visibility: visible; position: fixed; left: 0; top: 0; width: 100%; height: 100%; opacity: 1;");
-    	} else {
-    		ccanvas.setAttribute('style', "visibility: hidden; position: fixed; left: 0; top: 0; width: 100%; height: 100%; opacity: 1;");
-    	}
-
-    	return settings.debug;
-    };
-
-    /* @public */
     gest.prototype.start = function () {
-    	if (!navigator.getUserMedia) { return false; }
+    	userHasAskedToStart = true;
 
-    	if (!video || !(video.paused || video.ended || video.seeking || video.readyState < video.HAVE_FUTURE_DATA)) { dispatchErrorEvent(2); return false; }
+    	if (!navigator.getUserMedia || !gestIsInitialised) { return false; }
+
+    	if (!video || !(video.paused || video.ended || video.seeking || video.readyState < video.HAVE_FUTURE_DATA)) { throwError(2); return false; }
 
 		if (navigator.getUserMedia) {
 		  	navigator.getUserMedia(
@@ -160,7 +200,7 @@ window.gest = (function (document) {
 		    		video.src = window.URL.createObjectURL(stream);
 
 		    		video.addEventListener('canplaythrough',
-		    			//play the video once the it can play through
+		    			//play the video once it can play through
 						function() {
 							video.play();
 
@@ -177,17 +217,17 @@ window.gest = (function (document) {
 		  		// errorCallback
 		  		function(error) {
 		  			if (error.PERMISSION_DENIED) {
-		  				dispatchErrorEvent(10, error);
+		  				throwError(10, error);
 		  			} else if (error.NOT_SUPPORTED_ERROR) {
-		  				dispatchErrorEvent(11, error);
+		  				throwError(11, error);
 		  			} else if (error.MANDATORY_UNSATISFIED_ERROR) {
-		  				dispatchErrorEvent(12, error);
+		  				throwError(12, error);
 		  			} else {
-		  				dispatchErrorEvent(13, error);
+		  				throwError(13, error);
 		  			}	
 		  		});
 		} else {
-		  	dispatchErrorEvent(0);
+		  	throwError(0);
 		  	//video.src = 'myfallbackvideo.webm'; // define a fallback for demo purposes
 		}
 
@@ -465,41 +505,12 @@ window.gest = (function (document) {
 	}
 
 	/* @private */
-	var dispatchGestEvent = function(_gestEvent) {
-		//console.log(_gestEvent);
-
-		//intialise the event object
-		gestEvent.direction = _gestEvent.direction || null;
-		gestEvent.up = _gestEvent.up || false;
-		gestEvent.down = _gestEvent.down || false;
-		gestEvent.left = _gestEvent.left || false;
-		gestEvent.right = _gestEvent.right || false;
-		gestEvent.error = _gestEvent.error || null;
-		gestEvent.ready = _gestEvent.ready || false;
-
-		//fire gestEvent
-		try {
-			if (document.createEventObject) {
-				//IE 
-				return document.fireEvent("on" + gestEvent.eventType, gestEvent);
-			} else {
-				//everyone else
-				return document.dispatchEvent(gestEvent);
-			}
-		} catch (e) {
-			console.log(gestEvent);
-			console.error(e);
-			return false;
-		}
-	};
-
-	/* @private */
-	var dispatchErrorEvent = function(_code, _obj) {
+	var throwError = function(_code, _obj) {
 		// setup up error codes
 
 		switch (_code) {
 			case 0:
-				_error = {code: _code, message: 'Sorry, but gest.js does not support your browser! :( <br />Have you tried using Google Chrome?'}; //getUserMedia is not support by your browser
+				_error = {code: _code, message: 'Your web browser does not support gest.js :( <br />Have you tried using Google Chrome?'}; //getUserMedia is not support by your browser
 				break;
 
 			case 1:
@@ -507,7 +518,7 @@ window.gest = (function (document) {
 				break;
 
 			case 2:
-				_error = {code: _code, message: 'gest has already started.'};
+				_error = {code: _code, message: 'gest.js has already started.'};
 				break;
 
 			case 10:
@@ -515,7 +526,7 @@ window.gest = (function (document) {
 				break;
 
 			case 11:
-				_error = {code: _code, message: 'A constraint specified is not supported by the browser.', obj: _obj};
+				_error = {code: _code, message: 'A constraint specified is not supported by the web browser.', obj: _obj};
 				break;
 
 			case 12:
@@ -531,7 +542,7 @@ window.gest = (function (document) {
 				break;
 		}
 
-		//tell the developer about the error
+		//tell the developer and user about the error
 		if (settings.debug) { console.error(_error); }
 		showMessage(_error.message, 4000);
 		dispatchGestEvent( {error: _error} );
@@ -543,14 +554,14 @@ window.gest = (function (document) {
 		messageLocked = false;
 	var	showMessage = function(HTMLmessage, _duration) {
 		if (!gest.options.messages || !HTMLmessage) { return false; }
-		if (messageLocked) { messageLocked = true; return false; } //don't interrupt longer messages, these need to be read
+		if (messageLocked) { messageLocked = true; return false; } //don't interrupt longer (locked) messages, these need time to be read
 		
-		var duration = _duration || 2500;
+		var duration = _duration || 2500; // set a default duration of 2500ms
 
 		window.clearTimeout(messageTimout);
 		window.clearInterval(messageTimer);
 	
-		var messageContainerStyle = "visibility: visible; position: fixed; left: 50%; top: 50%; width: 500px; min-height: 80px; margin-left: -250px; margin-top: -40px; padding: 1%; background-color: #222222; border-radius: 10px; z-index: 100; font-family: Arial; color: #FFFFFF; font-size: 35px; text-align: center;";	
+		var messageContainerStyle = "visibility: visible; position: fixed; left: 50%; top: 40%; width: 500px; min-height: 80px; margin-left: -250px; margin-top: -50px; padding: 1%; background-color: #222222; border-radius: 10px; z-index: 100; font-family: Arial; color: #FFFFFF; font-size: 35px; text-align: center;";	
 		var messageContainerOpacity = 1;
 
 		messageContainer.innerHTML = HTMLmessage;
@@ -569,7 +580,7 @@ window.gest = (function (document) {
 			}, 40); //fade it out
 		}, duration); //show message for
 
-		if (duration >= 2000) { messageLocked = true; }
+		if (duration >= 2000) { messageLocked = true; } //lock messages that need time to be read
 
 		return true;
 	};
