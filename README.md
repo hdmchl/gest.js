@@ -1,13 +1,13 @@
 #LIVE PREVIEW and DEMOS
 
-A simple gest.js Demo that display the gesture direction on screen: [http://hadimichael.github.io/gest.js/demos/simple/index.html](http://hadimichael.github.io/gest.js/demos/simple/index.html)
+A simple gest.js demo that displays the gesture direction on screen: [http://hadimichael.github.io/gest.js/demos/simple/index.html](http://hadimichael.github.io/gest.js/demos/simple/index.html)
 
 Using gest.js to control [Nathan Searles' SlidesJS](http://www.slidesjs.com/): [http://hadimichael.github.io/gest.js/demos/slidesjs/index.html](http://hadimichael.github.io/gest.js/demos/slidesjs/index.html)
 
 #USAGE
 
 ##Include the library (gest.js)
-You will need to include the 'gest.js' script using something like:
+You will need to include the 'gest.js' library using something like:
 
 <code>&lt;script type="text/javascript" src="gest.min.js"&gt;&lt;/script&gt;</code>
 
@@ -18,7 +18,7 @@ You can start gest.js by calling:
 ##Listening for recognised gestures
 You will need to register an event listener on the <code>document</code> for <code>gest</code> using:
 <pre><code>document.addEventListener('gest', function(gesture) {
-	//handle gesture .direction .up .down .left .right
+	//handle gesture .direction .up .down .left .right .error
 }, false);
 </code></pre>
 
