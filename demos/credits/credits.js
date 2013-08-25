@@ -11,9 +11,9 @@
 
 	var body = document.getElementsByTagName('body')[0];
 	var header = document.createElement('header');
-	header.innerHTML = "<div class=\"credits\"><a href=\"http://twitter.com/hadi_michael\"><img src=\"../credits/profile.png\" alt=\"Hadi Michael\"></a><p>Built by <a href=\"http://twitter.com/hadi_michael\">@hadi_michael</a></p></div>";
+	header.innerHTML = "<div class=\"credits header_div\"><a href=\"http://twitter.com/hadi_michael\"><img src=\"../credits/profile.png\" alt=\"Hadi Michael\"></a><p>By <a href=\"http://twitter.com/hadi_michael\">@hadi_michael</a></p></div>";
 
-	header.innerHTML += "<div class=\"demo\"><p>" + document.title + "</p></div>";
+	header.innerHTML += "<div class=\"demo_name header_div\"><p>" + document.title + "</p></div>";
 
 	body.appendChild(header);
 }(document));

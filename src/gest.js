@@ -1,7 +1,7 @@
 /* 
  * @name: gest.js
  * @description: gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.
- * @version: 0.4.1
+ * @version: 0.4.2
  * @author: Hadi Michael (http://hadi.io)
  * @acknowledgements: gest.js is an extension of work started by William Wu (https://github.com/wvvvw)
  * @license: MIT License
@@ -510,7 +510,7 @@ window.gest = (function (document) {
 
 		switch (_code) {
 			case 0:
-				_error = {code: _code, message: 'Your web browser does not support gest.js :( <br />Have you tried using Google Chrome?'}; //getUserMedia is not support by your browser
+				_error = {code: _code, message: 'Your web browser does not support gest.js :( <br />Try using Google Chrome.'}; //getUserMedia is not support by your browser
 				break;
 
 			case 1:
@@ -561,7 +561,13 @@ window.gest = (function (document) {
 		window.clearTimeout(messageTimout);
 		window.clearInterval(messageTimer);
 	
-		var messageContainerStyle = "visibility: visible; position: fixed; left: 50%; top: 40%; width: 500px; min-height: 80px; margin-left: -250px; margin-top: -50px; padding: 1%; background-color: #222222; border-radius: 10px; z-index: 100; font-family: Arial; color: #FFFFFF; font-size: 35px; text-align: center;";	
+		//make the messages box take an appropriate size in the screen
+		var messageContainerStyle = "visibility: visible; position: fixed; left: 50%; top: 40%; min-height: 80px; margin-top: -50px; padding: 10px; background-color: #222222; border-radius: 10px; z-index: 100; font: normal 15px/1.1 \"Helvetica Neue\", Helvetica, Arial, sans-serif; color: #FFFFFF; font-size: 35px; text-align: center;";	
+		if (document.width > 767 || window.innerWidth > 767) {
+			messageContainerStyle += "margin-left: -250px; width: 500px"; 
+		} else {	
+			messageContainerStyle += "margin-left: -40%; width:80%; min-width: 250px"
+		}
 		var messageContainerOpacity = 1;
 
 		messageContainer.innerHTML = HTMLmessage;

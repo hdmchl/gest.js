@@ -1,7 +1,7 @@
 header {
 	font: normal 15px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;
 	color: #333;
-	background: white;
+	background: #F0F0F0;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -19,6 +19,7 @@ header img {
 }
 
 header p {
+	margin: 0px;
 	line-height: 60px;
 	vertical-align: middle;
 }
@@ -28,12 +29,22 @@ header a {
 	color: #d22929;
 }
 
-.demo {
+.header_div {
 	position: absolute;
-	left: 40%;
-	top: 0;
+	top: 0px;
 }
 
-.demo strong {
-	margin-right: 4px;
+.credits {
+	width: 300px;
+}
+
+.demo_name {
+	right: 10px;	
+}
+
+/* For tablets & smart phones */
+@media (max-width: 767px) {
+	.demo_name {
+		visibility: hidden;
+	}
 }
