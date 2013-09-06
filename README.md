@@ -48,6 +48,10 @@ To improve recognition, you may choose to enable HSV skin filtering. You can do 
 gest.js shows on screen messages as user feedback, you can control these using:
 <code>gest.options.messages = false;</code>
 
+###Locking (0 by default)
+Sometimes gest.js may rapidly pick up two consecutive gestures, often the second of these gestures is in error. To help mitigate this, you can set a <code>locking</code> option in milliseconds. This will lock gest.js and stop it from dispatching gest events. On screen messages however, will continue to be displayed. To set a locking timeout, use:
+<code>gest.options.locking = 500;</code>
+
 ###Debugging (off by default)
 In order to view the video stream and enable <code>console.log(…)</code> messages, you will need to toggle debugging using:
 <code>gest.options.debug(true);</code>
