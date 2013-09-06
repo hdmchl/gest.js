@@ -31,9 +31,9 @@
         <h1>
 <a name="live-preview-and-demos" class="anchor" href="#live-preview-and-demos"><span class="octicon octicon-link"></span></a>LIVE PREVIEW and DEMOS</h1>
 
-<p>A simple gest.js demo that displays the gesture direction on screen: <a href="http://hadimichael.github.io/gest.js/demos/simple/index.html">http://hadimichael.github.io/gest.js/demos/simple/index.html</a></p>
-
 <p>Using gest.js to control <a href="http://www.slidesjs.com/">Nathan Searles' SlidesJS</a>: <a href="http://hadimichael.github.io/gest.js/demos/slidesjs/index.html">http://hadimichael.github.io/gest.js/demos/slidesjs/index.html</a></p>
+
+<p>A simple gest.js demo that displays the gesture direction on screen: <a href="http://hadimichael.github.io/gest.js/demos/simple/index.html">http://hadimichael.github.io/gest.js/demos/simple/index.html</a></p>
 
 <h1>
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>USAGE</h1>
@@ -107,6 +107,12 @@
 
 <p>gest.js shows on screen messages as user feedback, you can control these using:
 <code>gest.options.messages = false;</code></p>
+
+<h3>
+<a name="locking-0-by-default" class="anchor" href="#locking-0-by-default"><span class="octicon octicon-link"></span></a>Locking (0 by default)</h3>
+
+<p>Sometimes gest.js may rapidly pick up two consecutive gestures, often the second of these gestures is in error. To help mitigate this, you can set a <code>locking</code> option in milliseconds. This will lock gest.js and stop it from dispatching gest events. On screen messages however, will continue to be displayed. To set a locking timeout, use:
+<code>gest.options.locking = 500;</code></p>
 
 <h3>
 <a name="debugging-off-by-default" class="anchor" href="#debugging-off-by-default"><span class="octicon octicon-link"></span></a>Debugging (off by default)</h3>
