@@ -1,7 +1,7 @@
 /* 
  * @name: gest.js
  * @description: gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.
- * @version: 0.4.2
+ * @version: 0.4.3
  * @author: Hadi Michael (http://hadi.io)
  * @acknowledgements: gest.js is an extension of work started by William Wu (https://github.com/wvvvw)
  * @license: MIT License
@@ -34,12 +34,13 @@ window.gest = (function (document) {
 
     //setup getUserMedia
     navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;// || navigator.mozGetUserMedia; //|| navigator.msGetUserMedia; //I can't support firefox until I iron out some bugs
-	
+
 	//initialise default settings
     var	settings = {
 			framerate: 25,
 			videoCompressionRate: 5,
-			debug: false
+			debug: false,
+			locked: false
 		};
 
 	//manage gest's run states - I do this is to keep track of what the user wants to do and where gest is up to in it's initialisation
@@ -66,6 +67,17 @@ window.gest = (function (document) {
 		gestEvent.right = _gestEvent.right || false; 		//bool
 		gestEvent.error = _gestEvent.error || null; 		//error message as an object {error, message}
 
+		if ((gestEvent.up || gestEvent.down || gestEvent.left || gestEvent.right) && settings.locked) {
+			if (settings.debug) { console.log('Locked. Gesture skipped.'); }
+			return false;
+		} else {
+			settings.locked = true;
+
+			setTimeout(function() {
+				settings.locked = false;
+			}, gest.options.locking);
+		}
+
 		//fire gestEvent
 		try {
 			if (document.createEventObject) {
@@ -88,6 +100,8 @@ window.gest = (function (document) {
     	this.options = {
 			skinFilter: false,	//do not do skin filtering by default
 			messages: true, 	//show on screen messages by default
+			locking: 0,			//lock gest for some time (in ms) to prevent multiple gesture detection
+
 			debug: function(state) {
 		    	settings.debug = state;
 
