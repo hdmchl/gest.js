@@ -1,4 +1,16 @@
-#LIVE PREVIEW and DEMOS
+#PRESENTATION AT MELBJS
+
+This is a short presentation I gave that summarises gest.js: [http://hadimichael.github.io/gestjs-presentation/](http://hadimichael.github.io/gestjs-presentation/)
+
+#gest.js IN THE WILD
+
+The University of Connecticut are using gest.js on a large-screen lobby display [http://grad.uconn.edu/lobbydisplay/winter/](http://grad.uconn.edu/lobbydisplay/winter/) - thanks to [@joelsalisbury](http://twitter.com/joelsalisbury)
+
+Gesture game [http://thirst-staging.com/experiments/gest/](http://thirst-staging.com/experiments/gest/) - thanks to [@LochieAxo](http://twitter.com/LochieAxo)
+
+I'd love to know how you will use gest.js! Please get in touch - [@hadi_michael](http://twitter.com/hadi_michael)
+
+#EXAMPLES
 
 A simple gest.js demo that displays the gesture direction on screen: [http://hadimichael.github.io/gest.js/demos/simple/index.html](http://hadimichael.github.io/gest.js/demos/simple/index.html)
 
@@ -58,6 +70,7 @@ In order to view the video stream and enable <code>console.log(…)</code> messa
 
 #TODO
 
+- Code cleanup (particularly around visuals)
 - Better Firefox support...
 - bespoke.js plugin
 
