@@ -272,8 +272,8 @@ window.gest = (function (window) {
 			try {
 				if (evntObj.evntElement.dispatchEvent){
 					evntObj.evntElement.dispatchEvent(evntObj);
-				} else if (evntObj.evntElement.fireEvent && this.htmlEvents['on'+evntObj.evntName]) {// IE < 9
-					evntObj.evntElement.fireEvent('on'+evntObj.eventType, evntObj); // can trigger only real events (e.g. 'click')
+				} else if (evntObj.evntElement.fireEvent && this.htmlEvents['on'+evntObj.evntName]) { // IE < 9
+					evntObj.evntElement.fireEvent('on'+evntObj.eventType, evntObj); // can only fire real events (such as 'click')
 				} else if (evntObj.evntElement[evntObj.evntName]){
 					evntObj.evntElement[evntObj.evntName]();
 				} else if (evntObj.evntElement['on'+evntObj.evntName]){
@@ -351,6 +351,11 @@ window.gest = (function (window) {
 	gest.prototype.options = {
 		messages: function (state) {
 			if (state) {
+				//create message container
+				var messageContainer = document.createElement('div');
+				messageContainer.className = 'gest-message';
+				document.body.appendChild(messageContainer);
+				
 				utils.addEventListener('gest', document, function(gesture) {
 					if (gesture) {
 						console.log(gesture.error.message);
