@@ -34,9 +34,6 @@ window.gest = (function (window) {
 	//setup getUserMedia - this could screw up another implementation of getUserMedia on the page, but really, they shouldn't be using the camera for anything else
 	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
-	//initialise the return object
-	//var	eventObj = {},
-
 	//initialise default settings
 	var	settings = {
 		framerate: 25,
@@ -79,16 +76,8 @@ window.gest = (function (window) {
 			utils.removeEventListener('DOMContentLoaded', document, _DOMready);
 			utils.removeEventListener('load', window, _DOMready);
 			
-			//bind gest.js events to the document, we need to do this ASAP so we can open means of communication with the front-end
-			//we use this approach instead of a callback, because this contructor is executed automatically at page load, and the dev
-			//  hasn't had an opportunity to define a callback yet
-			//utils.createCustomEvent('gest', document);
-
-			utils.addEventListener('gest', document, function () {
-				console.log('event fired')
-			});
-
-			utils.fireEvent('gest', document);
+			//set default settings
+			window.gest.options.messages(true);
 
 			//we need to call and wait for init to finish before we know that we are actually ready
 			if (init()) { gestIsInitialised = true; }
@@ -96,7 +85,7 @@ window.gest = (function (window) {
 			if (userHasAskedToStart && gestIsInitialised) {
 				//the user has already asked us to start, but we weren't ready. Now we are... let's try again
 				return window.gest.start();
-			}	
+			}
 
 			return false;
 		}
@@ -107,18 +96,18 @@ window.gest = (function (window) {
 	/* @private */
 	dispatchGestEvent = function(_gestEvent) {
 		//console.log(_gestEvent);
-		var eventObj = utils.getGestEventObj();
+		var eventObj = utils.createCustomEvent('gest', document);
 
-		//intialise the event object
-		// eventObj.direction = _gestEvent.direction || null;	//direction as a string, ex. left, right, up, down
-		// eventObj.up = _gestEvent.up || false;				//bool
-		// eventObj.down = _gestEvent.down || false;			//bool
-		// eventObj.left = _gestEvent.left || false;			//bool
-		// eventObj.right = _gestEvent.right || false;			//bool
-		// eventObj.error = _gestEvent.error || null;			//error message as an object {error, message}
+		//setup the event object with gesture information
+		eventObj.direction = _gestEvent.direction || null;	//direction as a string, ex. left, right, up, down
+		eventObj.up = _gestEvent.up || false;				//bool
+		eventObj.down = _gestEvent.down || false;			//bool
+		eventObj.left = _gestEvent.left || false;			//bool
+		eventObj.right = _gestEvent.right || false;			//bool
+		eventObj.error = _gestEvent.error || null;			//error message as an object {error, message}
 
 		//fire eventObj
-		//utils.fireEvent('gest', document);
+		utils.fireEvent(eventObj);
 	},
 
 	/* @private */
@@ -192,7 +181,7 @@ window.gest = (function (window) {
 
 		//tell the developer and user about the error
 		if (settings.debug) { console.error(_error.message); }
-		//dispatchGestEvent( {error: _error} );
+		dispatchGestEvent( {error: _error} );
 	},
 
 	/* @private */
@@ -212,7 +201,7 @@ window.gest = (function (window) {
 
 	/* @private */
 	utils = {
-		/* Event Handling */
+		/* Event Handling utility by @hadi_michael - MIT License */
 		htmlEvents: { //list of real events
 			//<body> and <frameset> Events
 			onload:1,
@@ -243,7 +232,7 @@ window.gest = (function (window) {
 		addEventListener: function(evntName, elem, func) {
 			if (elem.addEventListener)  //W3C
 				elem.addEventListener(evntName, func, false);
-			else if (elem.attachEvent && htmlEvents['on'+evntName]) { //OLD IE < 9
+			else if (elem.attachEvent && this.htmlEvents['on'+evntName]) { //OLD IE < 9
 				elem.attachEvent('on'+evntName, func);
 			} else {
 				elem['on'+evntName] = func;
@@ -253,7 +242,7 @@ window.gest = (function (window) {
 		removeEventListener: function(evntName, elem, func) {
 			if (elem.removeEventListener)  //W3C
 				elem.removeEventListener(evntName, func, false);
-			else if (elem.detachEvent && htmlEvents['on'+evntName]) { //OLD IE < 9
+			else if (elem.detachEvent && this.htmlEvents['on'+evntName]) { //OLD IE < 9
 				elem.detachEvent('on'+evntName, func);
 			} else {
 				elem['on'+evntName] = null;
@@ -261,43 +250,40 @@ window.gest = (function (window) {
 		},
 
 		createCustomEvent: function(evntName, elem) {
-			var evnt = false;
-			if (elem.createEvent) { //W3C
-				evnt = elem.createEvent('Event');
-				evnt.initEvent(evntName, true, true);
-			} else if (elem.createEventObject) { //OLD IE < 9
-				evnt = elem.createEventObject();
-				evnt.eventType = evntName;
+			try {
+				var evnt;
+				if (elem.createEvent) { //W3C
+					evnt = elem.createEvent('Event');
+					evnt.initEvent(evntName, true, true);
+				} else if (elem.createEventObject) { //OLD IE < 9
+					evnt = elem.createEventObject();
+					evnt.eventType = evntName;
+				}
+				evnt.evntName = evntName;
+				evnt.evntElement = elem;
+				return evnt;
+			} catch (e) {
+				console.error(e);
+				return false;
 			}
-			return evnt;
 		},
 		
-		fireEvent: function(evntName, elem) {
-			//create a custom event object
-			var evnt;
-			if (elem.createEvent) { //W3C
-				evnt = elem.createEvent('HTMLEvents');
-				evnt.initEvent(evntName, true, true);
-			} else if (elem.createEventObject) { //OLD IE < 9
-				evnt = elem.createEventObject();
-				evnt.eventType = evntName;
-			}
-
-			//customise event
-			evnt.evntName = evntName;
-			
-			//fire event
-			if (elem.dispatchEvent){
-				elem.dispatchEvent(evnt);
-			} else if (elem.fireEvent && htmlEvents['on'+evntName]) {// IE < 9
-				elem.fireEvent('on'+evnt.eventType, evnt); // can trigger only real events (e.g. 'click')
-			} else if (elem[evntName]){
-				elem[evntName]();
-			} else if (elem['on'+evntName]){
-				elem['on'+evntName]();
+		fireEvent: function(evntObj) {
+			try {
+				if (evntObj.evntElement.dispatchEvent){
+					evntObj.evntElement.dispatchEvent(evntObj);
+				} else if (evntObj.evntElement.fireEvent && this.htmlEvents['on'+evntObj.evntName]) {// IE < 9
+					evntObj.evntElement.fireEvent('on'+evntObj.eventType, evntObj); // can trigger only real events (e.g. 'click')
+				} else if (evntObj.evntElement[evntObj.evntName]){
+					evntObj.evntElement[evntObj.evntName]();
+				} else if (evntObj.evntElement['on'+evntObj.evntName]){
+					evntObj.evntElement['on'+evntObj.evntName]();
+				}
+			} catch (e) {
+				console.error(e);
 			}
 		}
-		/* /Event Handling */
+		/* /Event Handling utility */
 	};
 
 	/* @public */
@@ -359,6 +345,23 @@ window.gest = (function (window) {
 
 		if (video) { video.src = ''; }
 		return !!stream.stop();
+	};
+
+	/* @public */
+	gest.prototype.options = {
+		messages: function (state) {
+			if (state) {
+				utils.addEventListener('gest', document, function(gesture) {
+					if (gesture) {
+						console.log(gesture.error.message);
+					} else {
+						console.log('old ie');
+					}
+				});
+			} else {
+				utils.removeEventListener('gest', document);
+			}
+		}
 	};
 
 	return new gest();
