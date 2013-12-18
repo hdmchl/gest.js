@@ -120,14 +120,14 @@ window.gest = (function (window) {
 			//video.setAttribute('style', 'display: none;');
 			document.body.appendChild(video);
 
-			//canvas.setAttribute('style', 'width: 300px; display: none;');
+			canvas.setAttribute('style', 'width: 300px;'); //display: none;
 			document.body.appendChild(canvas);
 
 			context = canvas.getContext('2d');
 
 			//for visualising the diff map
 			ccanvas = document.createElement('canvas'); //compressed
-			//ccanvas.setAttribute('style', 'display: none;');
+			ccanvas.setAttribute('style', 'width: 300px;');
 			document.body.appendChild(ccanvas);
 
 			ccontext = ccanvas.getContext('2d'); //compressed
@@ -362,6 +362,13 @@ window.gest = (function (window) {
 						var width = Math.floor(video.videoWidth / settings.videoCompressionRate),
 							height = Math.floor(video.videoHeight / settings.videoCompressionRate);
 						
+						//define canvas sizes
+						canvas.width = width;
+						canvas.height = height;
+						ccanvas.width = width;
+						ccanvas.height = height;
+
+						//capture frames on set intervals
 						setInterval(function() { grabVideoFrame(width, height); }, 1000/settings.framerate);
 					}
 				);
