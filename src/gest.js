@@ -38,6 +38,7 @@ window.gest = (function (window) {
 	var	settings = {
 		framerate: 25,
 		videoCompressionRate: 5,
+		sensitivity: 80, //value from 0 to 100
 		debug: true
 	},
 
@@ -76,9 +77,6 @@ window.gest = (function (window) {
 			utils.removeEventListener('DOMContentLoaded', document, _DOMready);
 			utils.removeEventListener('load', window, _DOMready);
 			
-			//set default settings
-			window.gest.options.messages(true);
-
 			//we need to call and wait for init to finish before we know that we are actually ready
 			if (init()) { gestIsInitialised = true; }
 
@@ -104,7 +102,7 @@ window.gest = (function (window) {
 		eventObj.down = _gestEvent.down || false;			//bool
 		eventObj.left = _gestEvent.left || false;			//bool
 		eventObj.right = _gestEvent.right || false;			//bool
-		eventObj.error = _gestEvent.error || null;			//error message as an object {error, message}
+		eventObj.error = _gestEvent.error || null;			//error message as an object {error (int), message (string)}
 
 		//fire eventObj
 		utils.fireEvent(eventObj);
@@ -119,16 +117,17 @@ window.gest = (function (window) {
 		if (!!video.canPlayType && !!(canvas.getContext && canvas.getContext('2d')) && !!navigator.getUserMedia) { //check browser support
 			//setup DOM elements
 			video.width = 300;
-			video.setAttribute('style', 'display: none;');
+			//video.setAttribute('style', 'display: none;');
 			document.body.appendChild(video);
 
-			canvas.setAttribute('style', 'width: 300px; display: none;');
+			//canvas.setAttribute('style', 'width: 300px; display: none;');
 			document.body.appendChild(canvas);
 
 			context = canvas.getContext('2d');
 
+			//for visualising the diff map
 			ccanvas = document.createElement('canvas'); //compressed
-			ccanvas.setAttribute('style', 'display: none;');
+			//ccanvas.setAttribute('style', 'display: none;');
 			document.body.appendChild(ccanvas);
 
 			ccontext = ccanvas.getContext('2d'); //compressed
@@ -147,7 +146,7 @@ window.gest = (function (window) {
 
 		switch (_code) {
 			case 0:
-				_error = {code: _code, message: 'Try using Google Chrome, because your current web browser doesn\'t support gest.js :('};
+				_error = {code: _code, message: 'gest.js can\'t run in your browser :('};
 				break;
 
 			case 1:
@@ -159,11 +158,11 @@ window.gest = (function (window) {
 				break;
 
 			case 10:
-				_error = {code: _code, message: 'DEEEENIED! The user denied permission to use a media device required for the operation.', obj: _obj};
+				_error = {code: _code, message: 'DEEENIED! gest.js needs webcam access.', obj: _obj};
 				break;
 
 			case 11:
-				_error = {code: _code, message: 'A constraint specified is not supported by the web browser.', obj: _obj};
+				_error = {code: _code, message: 'A constraint specified is not supported by the web-browser.', obj: _obj};
 				break;
 
 			case 12:
@@ -185,18 +184,63 @@ window.gest = (function (window) {
 	},
 
 	/* @private */
-	grabVideoFrame = function (){
-		// canvas.width = width;
-		// ccanvas.width = width;
-		// canvas.height = height;
-		// ccanvas.height = height;
+	grabVideoFrame = function (width, height) {
+		//grab a frame from the video and compress it to the width/height specified - we do this by drawing it onto a temporary canvas
+		context.drawImage(video, 0, 0, width, height);
 
-		// //draw mirrored frame into context
-		// context.drawImage(video, width, 0, -width, height);
-		
-		//copy the context into our processing context
+		//copy the get the current frame from the compressed video drawing on the canvas
 		var currentFrame = context.getImageData(0, 0, width, height);
-		ccontext.putImageData(currentFrame, 0, 0);
+
+		//calculate the difference map
+		getDifferenceMap(currentFrame, settings.sensitivity, width, height);
+	},
+
+	/* @private */
+	previousFrame = false,
+	getDifferenceMap = function (currentFrame, sensitivity, width, height) {
+		var delt = context.createImageData(width, height);
+
+		if (previousFrame !== false) {
+			var totalx	= 0,
+				totaly	= 0,
+				totald	= 0, //total number of changed pixels
+				totaln	= delt.width * delt.height,
+				pix		= totaln * 4,
+				maxAssessableColorChange = 256 * 3;
+
+			while ((pix -= 4) >= 0) {
+				//find the total change in color for this pixel-set
+				var d = Math.abs(currentFrame.data[pix] - previousFrame.data[pix]) +
+						Math.abs(currentFrame.data[pix+1] - previousFrame.data[pix+1]) +
+						Math.abs(currentFrame.data[pix+2] - previousFrame.data[pix+2]); //don't do [pix+3] because alpha doesn't change
+
+				if (d > maxAssessableColorChange*Math.abs((sensitivity-100)/100)) {
+					//if there has been significant change in color, mark the changed pixel
+					delt.data[pix]		= 255;	//R
+					delt.data[pix+1]	= 0;	//G
+					delt.data[pix+2]	= 0;	//B
+					delt.data[pix+3]	= 255;	//alpha
+					totald += 1;
+					totalx += ((pix/4) % delt.width);
+					totaly += (Math.floor((pix/4) / delt.height));
+				} else {
+					//otherwise keep it the same color
+					delt.data[pix]		= currentFrame.data[pix];
+					delt.data[pix+1]	= currentFrame.data[pix+1];
+					delt.data[pix+2]	= currentFrame.data[pix+2];
+					delt.data[pix+3]	= currentFrame.data[pix+3]; //change to 0 to hide user video
+				}
+			}
+		}
+
+		if (totald > 0) {
+			//if any pixels have changed, check for a gesture
+			//handle( {x: totalx, y: totaly, d: totald} );
+		}
+
+		//console.log(totald);
+		previousFrame = currentFrame;
+		ccontext.putImageData(delt, 0, 0);
 	},
 
 	/* @private */
@@ -315,21 +359,21 @@ window.gest = (function (window) {
 					function() {
 						video.play();
 
-						//width = Math.floor(video.videoWidth / settings.videoCompressionRate);
-						//height = Math.floor(video.videoHeight / settings.videoCompressionRate);
+						var width = Math.floor(video.videoWidth / settings.videoCompressionRate),
+							height = Math.floor(video.videoHeight / settings.videoCompressionRate);
 						
-						//setInterval(grabVideoFrame, 1000/settings.framerate);
+						setInterval(function() { grabVideoFrame(width, height); }, 1000/settings.framerate);
 					}
 				);
 			},
 
 			// errorCallback
 			function(error) {
-				if (error.PERMISSION_DENIED) {
+				if (error.PERMISSION_DENIED || error.name === 'PERMISSION_DENIED') {
 					throwError(10, error);
-				} else if (error.NOT_SUPPORTED_ERROR) {
+				} else if (error.NOT_SUPPORTED_ERROR || error.name === 'NOT_SUPPORTED_ERROR') {
 					throwError(11, error);
-				} else if (error.MANDATORY_UNSATISFIED_ERROR) {
+				} else if (error.MANDATORY_UNSATISFIED_ERROR || error.name === 'MANDATORY_UNSATISFIED_ERROR') {
 					throwError(12, error);
 				} else {
 					throwError(13, error);
@@ -349,23 +393,29 @@ window.gest = (function (window) {
 
 	/* @public */
 	gest.prototype.options = {
-		messages: function (state) {
-			if (state) {
-				//create message container
-				var messageContainer = document.createElement('div');
-				messageContainer.className = 'gest-message';
-				document.body.appendChild(messageContainer);
-				
+		subscribeWithCallback: function(callback) {
+			if (callback) {
 				utils.addEventListener('gest', document, function(gesture) {
-					if (gesture) {
-						console.log(gesture.error.message);
-					} else {
-						console.log('old ie');
-					}
+					callback(gesture);
 				});
-			} else {
-				utils.removeEventListener('gest', document);
 			}
+		},
+		sensitivity: function(value) {
+			settings.sensitivity = value;
+		},
+		debug: function(state) {
+			settings.debug = state;
+
+			if (state) {
+				//show debugging options, such as the video stream
+				video.setAttribute('style', 'display:block');
+				canvas.setAttribute('style', 'display:block');
+				ccanvas.setAttribute('style', 'display:block');
+			} else {
+
+			}
+			
+			return settings.debug;
 		}
 	};
 

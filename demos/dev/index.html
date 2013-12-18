@@ -16,6 +16,13 @@
 		<!-- diplay events on screen for DEMO purposes -->
 		<script type="text/javascript">
 			gest.start();
+
+			gest.options.subscribeWithCallback(function(gesture) {
+				document.write(gesture.error.message);
+				document.write(gesture.direction);
+			});
+
+			
 		</script>
 	</body>
 </html>
