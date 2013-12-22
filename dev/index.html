@@ -1,0 +1,26 @@
+<!DOCTYPE>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+
+		<title>Development Environment</title>
+
+		<meta name = "description" content = "gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive">
+		<meta name = "author" content = "Hadi Michael (http://hadi.io)">
+
+		<!-- include js -->
+		<script src="/src/gest.js"></script>
+	</head>
+
+	<body>
+		<!-- run gest.js to help me dev -->
+		<script type="text/javascript">
+			gest.start();
+			gest.options.debug(true);
+
+			gest.options.subscribeWithCallback(function(gesture) {
+				console.log(gesture.direction);
+			});
+		</script>
+	</body>
+</html>

@@ -1,13 +1,13 @@
 /* 
  * @name: gest.js
- * @description: gest.js is a webcam based gesture recognition library that can help developers make webpages more immersive.
+ * @description: gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive
  * @version: 0.5.0
  * @author: Hadi Michael (http://hadi.io)
  * @acknowledgements: gest.js is an extension of work started by William Wu (https://github.com/wvvvw)
  * @license: MIT License
 	The MIT License (MIT)
 
-	Copyright (c) 2013 Hadi Michael (http://hadi.io)
+	Copyright (c) 2013-2014 Hadi Michael (http://hadi.io)
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -123,7 +123,7 @@ window.gest = (function (window) {
 			
 			video.width = 300;
 			video.height = 225;
-			video.setAttribute('style', 'display: none;');
+			video.setAttribute('style', 'visibility: hidden;');
 			document.body.appendChild(video);
 
 			canvas.setAttribute('style', 'width: 300px; display: none;');
@@ -168,7 +168,7 @@ window.gest = (function (window) {
 				break;
 			
 			case 13:
-				_error = {code: _code, message: 'Couldn\'t get user media.', obj: _obj};
+				_error = {code: _code, message: 'Couldn\'t get access to webcam.', obj: _obj};
 				break;
 
 			default:
@@ -194,7 +194,7 @@ window.gest = (function (window) {
 			differenceMap.get(currentFrame, settings.sensitivity, width, height);
 		} catch (e) {
 			if (e.name === "NS_ERROR_NOT_AVAILABLE") {
-				//firefox isn't ready yet
+				//firefox isn't ready yet... hang tight, it'll kick in shortly
 			} else {
 				throw e;
 			}
@@ -247,7 +247,11 @@ window.gest = (function (window) {
 				lookForGesture.search( {x: totalx, y: totaly, d: totald} );
 
 				//show in debug canvas
-				if (settings.debug.state && settings.debug.context.putImageData) { settings.debug.context.putImageData(delt, 0, 0); }
+				if (settings.debug.state && settings.debug.context.putImageData) {
+					settings.debug.canvas.width = width;
+					settings.debug.canvas.height = height;
+					settings.debug.context.putImageData(delt, 0, 0);
+				}
 			}
 			this.priorFrame = currentFrame;
 		}
@@ -465,21 +469,18 @@ window.gest = (function (window) {
 
 						utils.addEventListener('playing', video,
 							function() {
+
 								var width = Math.floor(video.getBoundingClientRect().width / settings.videoCompressionRate),
 									height = Math.floor(video.getBoundingClientRect().height / settings.videoCompressionRate);
 								
 								//define canvas sizes
 								canvas.width = width;
 								canvas.height = height;
-								//ccanvas.width = width;
-								//ccanvas.height = height;
 
 								//capture frames on set intervals
 								setInterval(function() { grabVideoFrame(width, height); }, 1000/settings.framerate);
 							}
 						);
-
-						
 					}
 				);
 			},
@@ -526,16 +527,18 @@ window.gest = (function (window) {
 			if (_state) {
 				//for visualising the diff map
 				settings.debug.canvas = document.createElement('canvas');
-				settings.debug.canvas.setAttribute('style', 'width: 100%; height: 100%; display: block;');
+				settings.debug.canvas.setAttribute('style', 'width: 100%; height: 100%; display: block; position: absolute; top: 0; left: 0;');
 				document.body.appendChild(settings.debug.canvas);
 				settings.debug.context = settings.debug.canvas.getContext('2d');
 
-				//video.setAttribute('style', 'display: block');
-				//canvas.setAttribute('style', 'display: block');
+				//settings.debug.canvas.setAttribute('style', 'width: 300px; display: block;');
+				//video.setAttribute('style', 'visibility: visible');
+				//canvas.setAttribute('style', 'visibility: visible');
 			} else {
 				settings.debug.canvas.setAttribute('style', 'display: none;');
-				// video.setAttribute('style', 'display: none');
-				// canvas.setAttribute('style', 'display: none');
+				settings.debug.canvas.parentNode.removeChild(settings.debug.canvas);
+				// video.setAttribute('style', 'visibility: hidden');
+				// canvas.setAttribute('style', 'visibility: hidden');
 			}
 			
 			return settings.debug;

@@ -5,7 +5,7 @@
 
 		<title>A simple gest.js demo that displays the gesture direction on screen</title>
 
-		<meta name = "description" content = "gest.js is a webcam based gesture recognition library that helps developers build more immersive webpages.">
+		<meta name = "description" content = "gest.js is a webcam based gesture recognition library that helps developers build more immersive webpages">
 		<meta name = "author" content = "Hadi Michael (http://hadi.io)">
 		
 		<!-- include js -->
@@ -15,19 +15,37 @@
 	<body>
 		<!-- diplay events on screen for DEMO purposes -->
 		<script type="text/javascript">
-			var div = document.createElement('div');
-			div.id = "mydiv";
-			div.setAttribute('style', 'position: fixed; top: 100px; left: 10px; width: 300px; z-index:100; color: blue; font-size: 35px; font-family: Arial;');
-			document.body.appendChild(div);
+			//create message container
+			var messageContainer = document.createElement('div');
+			messageContainer.className = 'gest-message';
+			document.body.appendChild(messageContainer);
+			
+			var styles = {
+				positioning: 'margin: 22% auto; min-width: 100px; max-width: 400px; width: 80%; padding: 15px;',
+				copy: 'font: normal 35px/1.1 \"Helvetica Neue\", Helvetica, Arial, sans-serif; color: #fff; font-size: 45px; text-align: center;',
+				general: 'display: block; background-color: #000; z-index: 100; border-radius: 10px;'
+			},
+				messageContainerStyle = styles.positioning + styles.copy + styles.general;
+	
+			gest.options.subscribeWithCallback(function(gesture) {
+				var message = '';
+				if (gesture.direction) {
+					message = gesture.direction;
+				} else {
+					message = gesture.error.message;
+				} 
 
-			document.addEventListener('gest', function(gesture) {
-				console.log(gesture);
-				document.getElementById('mydiv').innerHTML = gesture.direction;
-			}, false);
+				messageContainer.innerHTML = '<p style=\"margin:0\">' + message + '</p>';
+				messageContainer.setAttribute('style', messageContainerStyle);
+
+				window.setTimeout(function() {
+					messageContainer.setAttribute('style', 'display: none;');
+				}, 3000);
+			});
 
 			gest.start();
 		</script>
-
+		
 		<!-- Include credits -->
 		<script src="../credits/credits.js"></script>
 	</body>
