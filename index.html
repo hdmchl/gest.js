@@ -16,7 +16,7 @@
     <div class="wrapper">
       <header>
         <h1>Gest.js</h1>
-        <p>gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive.</p>
+        <p>gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive</p>
 
         <p class="view"><a href="https://github.com/hadimichael/gest.js">View the Project on GitHub <small>hadimichael/gest.js</small></a></p>
 
@@ -29,18 +29,18 @@
       </header>
       <section>
         <h1>
-<a name="presentation-at-melbjs" class="anchor" href="#presentation-at-melbjs"><span class="octicon octicon-link"></span></a>PRESENTATION AT MELBJS</h1>
+<a name="what-is-gestjs-check-out-this-presentation-from-melbjs" class="anchor" href="#what-is-gestjs-check-out-this-presentation-from-melbjs"><span class="octicon octicon-link"></span></a>What is gest.js? Check out this presentation from MelbJS</h1>
 
-<p>This is a short presentation I gave that summarises gest.js: <a href="http://hadimichael.github.io/gestjs-presentation/">http://hadimichael.github.io/gestjs-presentation/</a></p>
+<p>This is a short presentation I gave at MelbJS that summarises gest.js: <a href="http://hadimichael.github.io/gestjs-presentation/">http://hadimichael.github.io/gestjs-presentation/</a></p>
 
 <h1>
 <a name="gestjs-in-the-wild" class="anchor" href="#gestjs-in-the-wild"><span class="octicon octicon-link"></span></a>gest.js IN THE WILD</h1>
 
-<p>The University of Connecticut are using gest.js on a large-screen lobby display <a href="http://grad.uconn.edu/lobbydisplay/winter/">http://grad.uconn.edu/lobbydisplay/winter/</a> - thanks to <a href="http://twitter.com/joelsalisbury">@joelsalisbury</a></p>
-
-<p>Gesture game <a href="http://thirst-staging.com/experiments/gest/">http://thirst-staging.com/experiments/gest/</a> - thanks to <a href="http://twitter.com/LochieAxo">@LochieAxo</a></p>
-
-<p>I'd love to know how you will use gest.js! Please get in touch - <a href="http://twitter.com/hadi_michael">@hadi_michael</a></p>
+<ul>
+<li><p>The University of Connecticut are using gest.js on a large-screen lobby display <a href="http://grad.uconn.edu/lobbydisplay/winter/">http://grad.uconn.edu/lobbydisplay/winter/</a> - thanks to <a href="http://twitter.com/joelsalisbury">@joelsalisbury</a></p></li>
+<li><p>Stop the Elves - Christmas game <a href="http://stoptheelves.thirststudios.com/">http://stoptheelves.thirststudios.com/</a> - thanks again to <a href="http://twitter.com/LochieAxo">@LochieAxo</a></p></li>
+<li><p>Gesture game <a href="http://thirst-staging.com/experiments/gest/">http://thirst-staging.com/experiments/gest/</a> - thanks to <a href="http://twitter.com/LochieAxo">@LochieAxo</a></p></li>
+</ul><p>Are you using gest.js? Please get in touch <a href="http://twitter.com/hadi_michael">@hadi_michael</a></p>
 
 <h1>
 <a name="examples" class="anchor" href="#examples"><span class="octicon octicon-link"></span></a>EXAMPLES</h1>
@@ -66,9 +66,24 @@
 <code>gest.start();</code></p>
 
 <h2>
-<a name="listening-for-recognised-gestures" class="anchor" href="#listening-for-recognised-gestures"><span class="octicon octicon-link"></span></a>Listening for recognised gestures</h2>
+<a name="listen-for-recognised-gestures" class="anchor" href="#listen-for-recognised-gestures"><span class="octicon octicon-link"></span></a>Listen for recognised gestures</h2>
 
-<p>You will need to register an event listener on the <code>document</code> for <code>gest</code> using:</p>
+<h3>
+<a name="method-1-recommended" class="anchor" href="#method-1-recommended"><span class="octicon octicon-link"></span></a>Method 1 (recommended)</h3>
+
+<p>Use the <code>.options.subscribeWithCallback(...)</code> function to listen for gestures:</p>
+
+<pre><code>gest.options.subscribeWithCallback(function(gesture) {
+    //handle gesture .direction .up .down .left .right .error
+});
+</code></pre>
+
+<p>This method is recommended because it will automatically handle cross-browser event handling.</p>
+
+<h3>
+<a name="method-2" class="anchor" href="#method-2"><span class="octicon octicon-link"></span></a>Method 2</h3>
+
+<p>You can register an event listener on the <code>document</code> for <code>gest</code> using:</p>
 
 <pre><code>document.addEventListener('gest', function(gesture) {
     //handle gesture .direction .up .down .left .right .error
@@ -111,36 +126,40 @@
 <a name="using-options" class="anchor" href="#using-options"><span class="octicon octicon-link"></span></a>Using Options</h2>
 
 <h3>
+<a name="sensitivity-80-by-default" class="anchor" href="#sensitivity-80-by-default"><span class="octicon octicon-link"></span></a>Sensitivity (80 by default)</h3>
+
+<p>You can specify the degree of colour change that should be used to determine whether or not a pixel has changed. The specified value should range from 0-100, with 100 implying that the slightest change should be enough. You can specify sensitivity using: <code>gest.options.sensitivity(85);</code></p>
+
+<h3>
 <a name="skin-filtering-off-by-default" class="anchor" href="#skin-filtering-off-by-default"><span class="octicon octicon-link"></span></a>Skin Filtering (off by default)</h3>
 
-<p>To improve recognition, you may choose to enable HSV skin filtering. You can do so by using:
-<code>gest.options.skinFilter = true;</code></p>
-
-<h3>
-<a name="messages-on-by-default" class="anchor" href="#messages-on-by-default"><span class="octicon octicon-link"></span></a>Messages (on by default)</h3>
-
-<p>gest.js shows on screen messages as user feedback, you can control these using:
-<code>gest.options.messages = false;</code></p>
-
-<h3>
-<a name="locking-0-by-default" class="anchor" href="#locking-0-by-default"><span class="octicon octicon-link"></span></a>Locking (0 by default)</h3>
-
-<p>Sometimes gest.js may rapidly pick up two consecutive gestures, often the second of these gestures is in error. To help mitigate this, you can set a <code>locking</code> option in milliseconds. This will lock gest.js and stop it from dispatching gest events. On screen messages however, will continue to be displayed. To set a locking timeout, use:
-<code>gest.options.locking = 500;</code></p>
+<p>To improve recognition in bright lighting conditions, you can enable HSV skin filtering using: <code>gest.options.skinFilter(true);</code></p>
 
 <h3>
 <a name="debugging-off-by-default" class="anchor" href="#debugging-off-by-default"><span class="octicon octicon-link"></span></a>Debugging (off by default)</h3>
 
-<p>In order to view the video stream and enable <code>console.log(…)</code> messages, you will need to toggle debugging using:
-<code>gest.options.debug(true);</code></p>
+<p>In order to view the video stream and enable <code>console.log(…)</code> messages, you will need to toggle debugging using: <code>gest.options.debug(true);</code></p>
 
 <h1>
+<a name="whats-changed" class="anchor" href="#whats-changed"><span class="octicon octicon-link"></span></a>WHAT'S CHANGED</h1>
+
+<h2>
+<a name="v050-latest" class="anchor" href="#v050-latest"><span class="octicon octicon-link"></span></a>v0.5.0 (latest)</h2>
+
+<ul>
+<li>Firefox support (woohoo!)</li>
+<li>Error handling, all the way back to the stone ages (IE7)</li>
+<li>Better event handling</li>
+<li>Ability for the developer to define sensitivity</li>
+<li>A new <code>.options.subscribeWithCallback(...)</code> function</li>
+<li>On screen messages is now DEPRECATED. I decided that this is something that the front-end developer should build - it shouldn't be part of the library. If you really want it back, check demo/simple.</li>
+<li>Locking is now DEPRECATED. It wasn't an elegant enough solution. It might come back in future releases...</li>
+</ul><h1>
 <a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>TODO</h1>
 
 <ul>
-<li>Code cleanup (particularly around visuals)</li>
-<li>Better Firefox support...</li>
-<li>bespoke.js plugin</li>
+<li>bespoke.js plugin (this is pretty much done, I just need to package it up)</li>
+<li>Fine tune skin filtering values</li>
 </ul><h1>
 <a name="acknowledgements" class="anchor" href="#acknowledgements"><span class="octicon octicon-link"></span></a>Acknowledgements</h1>
 
@@ -175,6 +194,16 @@ THE SOFTWARE.</p>
       </footer>
     </div>
     <script src="javascripts/scale.fix.js"></script>
-    
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-46664260-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
   </body>
 </html>
