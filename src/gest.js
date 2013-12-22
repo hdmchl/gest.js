@@ -39,6 +39,7 @@ window.gest = (function (window) {
 		framerate: 25,
 		videoCompressionRate: 4,
 		sensitivity: 80,	//value from 0 to 100 (100 => very sensitive)
+		skinFilter: false,
 		debug: {
 			state: false,
 			canvas: null,
@@ -191,13 +192,106 @@ window.gest = (function (window) {
 			var currentFrame = context.getImageData(0, 0, width, height);
 
 			//calculate the difference map
-			differenceMap.get(currentFrame, settings.sensitivity, width, height);
+			if (settings.skinFilter) {
+				differenceMap.get(skinFilter.apply(currentFrame), settings.sensitivity, width, height);
+			} else {
+				differenceMap.get(currentFrame, settings.sensitivity, width, height);
+			}
 		} catch (e) {
 			if (e.name === "NS_ERROR_NOT_AVAILABLE") {
 				//firefox isn't ready yet... hang tight, it'll kick in shortly
+				return false;
 			} else {
 				throw e;
 			}
+		}
+	},
+
+	/* @private */
+	/* skin filtering using HUE (colour) SATURATION (dominance of the colour) VALUE (brightness of the colour) 
+	 * this algorithms reliability is heavily dependant on lighting conditions - see this journal article http://wwwsst.ums.edu.my/data/file/Su7YcHiV9AK5.pdf
+	 */
+	skinFilter = {
+		//TODO: fine tune these values
+		huemin: 0.0,
+		huemax: 0.1,
+		satmin: 0.3,
+		satmax: 1.0,
+		valmin: 0.4,
+		valmax: 1.0,
+		rgb2hsv: function (r, g, b){
+			r = r / 255;
+			g = g / 255;
+			b = b / 255;
+
+			var max = Math.max(r, g, b),
+				min = Math.min(r, g, b),
+
+				h, s, v = max,
+
+				d = max - min;
+
+			if (max === 0) {
+				s = 0;
+			} else {
+				s = d/max;
+			}
+
+			if (max == min) {
+				h = 0; // achromatic
+			} else {
+				switch(max){
+					case r:
+						h = (g - b) / d + (g < b ? 6 : 0);
+						break;
+					case g:
+						h = (b - r) / d + 2;
+						break;
+					case b:
+						h = (r - g) / d + 4;
+						break;
+					default:
+						break;
+				}
+				h /= 6;
+			}
+
+			return [h, s, v];
+		},
+		apply: function(currentFrame) {
+			var totalPix = currentFrame.width * currentFrame.height,
+				indexValue = totalPix * 4,
+				countDataBigAry = 0;
+
+			for (var y = 0; y < currentFrame.height; y++)
+			{
+				for (var x = 0 ; x < currentFrame.width ; x++)
+				{
+					indexValue = x + y * currentFrame.width;
+					var r = currentFrame.data[countDataBigAry],
+						g = currentFrame.data[countDataBigAry+1],
+						b = currentFrame.data[countDataBigAry+2],
+						a = currentFrame.data[countDataBigAry+3],
+
+						hsv = this.rgb2hsv(r,g,b);
+
+					//when the hand is too close (hsv[0] > 0.59 && hsv[0] < 1.0)
+					//skin range on HSV values
+					if ( ( (hsv[0] > this.huemin && hsv[0] < this.huemax) || (hsv[0] > 0.59 && hsv[0] < 1.0) ) && (hsv[1] > this.satmin && hsv[1] < this.satmax) && (hsv[2] > this.valmin && hsv[2] < this.valmax) ) {
+						currentFrame[countDataBigAry]   = r;
+						currentFrame[countDataBigAry+1] = g;
+						currentFrame[countDataBigAry+2] = b;
+						currentFrame[countDataBigAry+3] = a;
+					} else {
+						currentFrame.data[countDataBigAry]		= 255;
+						currentFrame.data[countDataBigAry+1]	= 255;
+						currentFrame.data[countDataBigAry+2]	= 255;
+						currentFrame.data[countDataBigAry+3]	= 0;
+					}
+					countDataBigAry = indexValue * 4;
+				}
+			}
+			return currentFrame;
 		}
 	},
 
@@ -519,7 +613,13 @@ window.gest = (function (window) {
 			}
 		},
 		sensitivity: function(_value) {
-			settings.sensitivity = _value;
+			if (_value >= 100) {
+				settings.sensitivity = 100;
+			} else if (_value <= 0) {
+				settings.sensitivity = 0;
+			} else {
+				settings.sensitivity = _value;
+			}
 		},
 		debug: function(_state) {
 			settings.debug.state = _state;
@@ -542,6 +642,9 @@ window.gest = (function (window) {
 			}
 			
 			return settings.debug;
+		},
+		skinFilter: function(_state) {
+			settings.skinFilter = _state;
 		}
 	};
 
