@@ -396,12 +396,12 @@ window.gest = (function (window) {
 					if (dx < -this.minDirChange && dirx) {
 						dispatchGestEvent({
 							direction: 'Right',
-							left: true
+							right: true
 						});
 					} else if (dx > this.minDirChange && dirx) {
 						dispatchGestEvent({
 							direction: 'Left',
-							right: true
+							left: true
 						});
 					}
 
