@@ -88,6 +88,8 @@ In order to view the video stream and enable <code>console.log(…)</code> messa
 #TODO
 - bespoke.js plugin (this is pretty much done, I just need to package it up)
 - Fine tune skin filtering values
+- Include a ready flag... might do this, not sure yet.
+- Bring back the ready message: "The force is strong with you, go forth and gesture."
 
 #Acknowledgements
 gest.js is an extension of work started by William Wu [https://github.com/willy-vvu](https://github.com/willy-vvu).
