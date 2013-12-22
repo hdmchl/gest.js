@@ -37,9 +37,13 @@ window.gest = (function (window) {
 	//initialise default settings
 	var	settings = {
 		framerate: 25,
-		videoCompressionRate: 5,
-		sensitivity: 80, //value from 0 to 100
-		debug: true
+		videoCompressionRate: 4,
+		sensitivity: 80,	//value from 0 to 100 (100 => very sensitive)
+		debug: {
+			state: false,
+			canvas: null,
+			context: null
+		}
 	},
 
 	//manage gest's run states - I do this is to keep track of what the user wants to do and where gest is up to in it's initialisation
@@ -50,7 +54,7 @@ window.gest = (function (window) {
 		stream,
 
 	//declare DOM elements
-		video, canvas, context, ccanvas, ccontext,
+		video, canvas, context,
 
 	/* @constructor */
 	gest = function() {
@@ -116,21 +120,15 @@ window.gest = (function (window) {
 
 		if (!!video.canPlayType && !!(canvas.getContext && canvas.getContext('2d')) && !!navigator.getUserMedia) { //check browser support
 			//setup DOM elements
+			
 			video.width = 300;
-			//video.setAttribute('style', 'display: none;');
+			video.height = 225;
+			video.setAttribute('style', 'display: none;');
 			document.body.appendChild(video);
 
-			canvas.setAttribute('style', 'width: 300px;'); //display: none;
+			canvas.setAttribute('style', 'width: 300px; display: none;');
 			document.body.appendChild(canvas);
-
 			context = canvas.getContext('2d');
-
-			//for visualising the diff map
-			ccanvas = document.createElement('canvas'); //compressed
-			ccanvas.setAttribute('style', 'width: 300px;');
-			document.body.appendChild(ccanvas);
-
-			ccontext = ccanvas.getContext('2d'); //compressed
 		} else {
 			throwError(0);
 			return false;
@@ -179,68 +177,174 @@ window.gest = (function (window) {
 		}
 
 		//tell the developer and user about the error
-		if (settings.debug) { console.error(_error.message); }
+		if (settings.debug.state) { console.error(_error.message); }
 		dispatchGestEvent( {error: _error} );
 	},
 
 	/* @private */
 	grabVideoFrame = function (width, height) {
 		//grab a frame from the video and compress it to the width/height specified - we do this by drawing it onto a temporary canvas
-		context.drawImage(video, 0, 0, width, height);
+		try {
+			//copy the get the current frame from the video and draw it (compressed) on the canvas
+			context.drawImage(video, 0, 0, width, height);
 
-		//copy the get the current frame from the compressed video drawing on the canvas
-		var currentFrame = context.getImageData(0, 0, width, height);
+			var currentFrame = context.getImageData(0, 0, width, height);
 
-		//calculate the difference map
-		getDifferenceMap(currentFrame, settings.sensitivity, width, height);
+			//calculate the difference map
+			differenceMap.get(currentFrame, settings.sensitivity, width, height);
+		} catch (e) {
+			if (e.name === "NS_ERROR_NOT_AVAILABLE") {
+				//firefox isn't ready yet
+			} else {
+				throw e;
+			}
+		}
 	},
 
 	/* @private */
-	previousFrame = false,
-	getDifferenceMap = function (currentFrame, sensitivity, width, height) {
-		var delt = context.createImageData(width, height);
+	differenceMap = {
+		priorFrame: false,
 
-		if (previousFrame !== false) {
-			var totalx	= 0,
-				totaly	= 0,
-				totald	= 0, //total number of changed pixels
-				totaln	= delt.width * delt.height,
-				pix		= totaln * 4,
-				maxAssessableColorChange = 256 * 3;
+		get: function (currentFrame, sensitivity, width, height) {
+			var delt = context.createImageData(width, height),
+				totalx = 0,
+				totaly = 0,
+				totald = 0; //total number of changed pixels
 
-			while ((pix -= 4) >= 0) {
-				//find the total change in color for this pixel-set
-				var d = Math.abs(currentFrame.data[pix] - previousFrame.data[pix]) +
-						Math.abs(currentFrame.data[pix+1] - previousFrame.data[pix+1]) +
-						Math.abs(currentFrame.data[pix+2] - previousFrame.data[pix+2]); //don't do [pix+3] because alpha doesn't change
+			if (this.priorFrame !== false) {
+				var totaln	= delt.width * delt.height,
+					pix		= totaln * 4,
+					maxAssessableColorChange = 256 * 3;
 
-				if (d > maxAssessableColorChange*Math.abs((sensitivity-100)/100)) {
-					//if there has been significant change in color, mark the changed pixel
-					delt.data[pix]		= 255;	//R
-					delt.data[pix+1]	= 0;	//G
-					delt.data[pix+2]	= 0;	//B
-					delt.data[pix+3]	= 255;	//alpha
-					totald += 1;
-					totalx += ((pix/4) % delt.width);
-					totaly += (Math.floor((pix/4) / delt.height));
-				} else {
-					//otherwise keep it the same color
-					delt.data[pix]		= currentFrame.data[pix];
-					delt.data[pix+1]	= currentFrame.data[pix+1];
-					delt.data[pix+2]	= currentFrame.data[pix+2];
-					delt.data[pix+3]	= currentFrame.data[pix+3]; //change to 0 to hide user video
+				while ((pix -= 4) >= 0) {
+					//find the total change in color for this pixel-set
+					var d = Math.abs(currentFrame.data[pix] - this.priorFrame.data[pix]) +
+							Math.abs(currentFrame.data[pix+1] - this.priorFrame.data[pix+1]) +
+							Math.abs(currentFrame.data[pix+2] - this.priorFrame.data[pix+2]); //don't do [pix+3] because alpha doesn't change
+
+					if (d > maxAssessableColorChange*Math.abs((sensitivity-100)/100)) {
+						//if there has been significant change in color, mark the changed pixel
+						delt.data[pix]		= 255;	//R
+						delt.data[pix+1]	= 0;	//G
+						delt.data[pix+2]	= 0;	//B
+						delt.data[pix+3]	= 255;	//alpha
+						totald += 1;
+						totalx += ((pix/4) % delt.width);
+						totaly += (Math.floor((pix/4) / delt.height));
+					} else {
+						//otherwise keep it the same color
+						delt.data[pix]		= currentFrame.data[pix];
+						delt.data[pix+1]	= currentFrame.data[pix+1];
+						delt.data[pix+2]	= currentFrame.data[pix+2];
+						delt.data[pix+3]	= currentFrame.data[pix+3]; //change to 0 to hide user video
+					}
 				}
 			}
-		}
 
-		if (totald > 0) {
-			//if any pixels have changed, check for a gesture
-			//handle( {x: totalx, y: totaly, d: totald} );
-		}
+			//console.log(totald);
+			if (totald > 0) {
+				//if any pixels have changed, check for a gesture
+				lookForGesture.search( {x: totalx, y: totaly, d: totald} );
 
-		//console.log(totald);
-		previousFrame = currentFrame;
-		ccontext.putImageData(delt, 0, 0);
+				//show in debug canvas
+				if (settings.debug.state && settings.debug.context.putImageData) { settings.debug.context.putImageData(delt, 0, 0); }
+			}
+			this.priorFrame = currentFrame;
+		}
+	},
+
+	/* @private */
+	lookForGesture = {
+		prior: false,
+		filteringFactor: 0.9,
+		filteredTotal: 0,		//number of changed pixel after filtering
+		minTotalChange: 300,	//minimum total number of pixels that need to change, before we decide that a gesture is happening
+		minDirChange: 2,		//minimum number of pixels that need to change to assert a directional change
+		longDirChange: 7,		//minimum number of pixels that need to change to assert a LONG directional change
+		state: 0,				//States: 0 waiting for gesture, 1 waiting for next move after gesture, 2 waiting for gesture to end
+		search: function(_movement){
+			var movement = {
+				x: _movement.x / _movement.d,
+				y: _movement.y / _movement.d,
+				d: _movement.d //delta (or total change)
+			};
+
+			//filtering
+			this.filteredTotal = (this.filteringFactor * this.filteredTotal) + ((1-this.filteringFactor) * movement.d);
+			
+			var dfilteredTotal = movement.d - this.filteredTotal,
+				good = dfilteredTotal > this.minTotalChange; //check that total pixel change is grater than threshold
+
+			//console.log(good, dfilteredTotal);
+			switch(this.state){
+				case 0:
+					if (good) {
+						//found a gesture, waiting for next move
+						this.state = 1;
+						lookForGesture.prior = movement;
+					}
+					break;
+
+				case 1:
+					//got next move, do something based on direction
+					this.state = 2;
+
+					var dx = movement.x - lookForGesture.prior.x,
+						dy = movement.y - lookForGesture.prior.y,
+					
+						dirx = Math.abs(dy) < Math.abs(dx); //(dx,dy) is on a bowtie
+					
+					//console.log(dirx, dx, dy);
+					if (dx < -this.minDirChange && dirx) {
+						dispatchGestEvent({
+							direction: 'Right',
+							left: true
+						});
+					} else if (dx > this.minDirChange && dirx) {
+						dispatchGestEvent({
+							direction: 'Left',
+							right: true
+						});
+					}
+
+					if (dy > this.minDirChange && !dirx) {
+						if (Math.abs(dy) > this.longDirChange) {
+							dispatchGestEvent({
+								direction: 'Long down',
+								down: true
+							});
+						} else {
+							dispatchGestEvent({
+								direction: 'Down',
+								down: true
+							});
+						}
+					} else if (dy < -this.minDirChange && !dirx) {
+						if (Math.abs(dy) > this.longDirChange) {
+							dispatchGestEvent({
+								direction: 'Long up',
+								up: true
+							});
+						} else {
+							dispatchGestEvent({
+								direction: 'Up',
+								up: true
+							});
+						}
+					}
+					break;
+
+				case 2:
+					//wait for gesture to end
+					if (!good) {
+						this.state = 0; //gesture ended
+					}
+					break;
+
+				default:
+					break;
+			}
+		}
 	},
 
 	/* @private */
@@ -334,7 +438,7 @@ window.gest = (function (window) {
 	gest.prototype.start = function () {
 		userHasAskedToStart = true;
 
-		//o, the user wants us to start, but are we ready to? Stop, if we're not. This will get called again when we are ready.
+		//so, the user wants us to start, but are we ready to? Stop, if we're not. This will get called again when we are ready.
 		if (!gestIsInitialised) { return false; }
 
 		//check to see if we are already running
@@ -354,22 +458,28 @@ window.gest = (function (window) {
 				window.URL = window.URL || window.webkitURL;
 				video.src = window.URL.createObjectURL(stream);
 
-				video.addEventListener('canplaythrough',
+				utils.addEventListener('canplaythrough', video,
 					//play the video once it can play through
 					function() {
 						video.play();
 
-						var width = Math.floor(video.videoWidth / settings.videoCompressionRate),
-							height = Math.floor(video.videoHeight / settings.videoCompressionRate);
-						
-						//define canvas sizes
-						canvas.width = width;
-						canvas.height = height;
-						ccanvas.width = width;
-						ccanvas.height = height;
+						utils.addEventListener('playing', video,
+							function() {
+								var width = Math.floor(video.getBoundingClientRect().width / settings.videoCompressionRate),
+									height = Math.floor(video.getBoundingClientRect().height / settings.videoCompressionRate);
+								
+								//define canvas sizes
+								canvas.width = width;
+								canvas.height = height;
+								//ccanvas.width = width;
+								//ccanvas.height = height;
 
-						//capture frames on set intervals
-						setInterval(function() { grabVideoFrame(width, height); }, 1000/settings.framerate);
+								//capture frames on set intervals
+								setInterval(function() { grabVideoFrame(width, height); }, 1000/settings.framerate);
+							}
+						);
+
+						
 					}
 				);
 			},
@@ -407,19 +517,25 @@ window.gest = (function (window) {
 				});
 			}
 		},
-		sensitivity: function(value) {
-			settings.sensitivity = value;
+		sensitivity: function(_value) {
+			settings.sensitivity = _value;
 		},
-		debug: function(state) {
-			settings.debug = state;
+		debug: function(_state) {
+			settings.debug.state = _state;
 
-			if (state) {
-				//show debugging options, such as the video stream
-				video.setAttribute('style', 'display:block');
-				canvas.setAttribute('style', 'display:block');
-				ccanvas.setAttribute('style', 'display:block');
+			if (_state) {
+				//for visualising the diff map
+				settings.debug.canvas = document.createElement('canvas');
+				settings.debug.canvas.setAttribute('style', 'width: 100%; height: 100%; display: block;');
+				document.body.appendChild(settings.debug.canvas);
+				settings.debug.context = settings.debug.canvas.getContext('2d');
+
+				//video.setAttribute('style', 'display: block');
+				//canvas.setAttribute('style', 'display: block');
 			} else {
-
+				settings.debug.canvas.setAttribute('style', 'display: none;');
+				// video.setAttribute('style', 'display: none');
+				// canvas.setAttribute('style', 'display: none');
 			}
 			
 			return settings.debug;
