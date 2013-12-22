@@ -178,9 +178,9 @@
 				/* add gest.js controls */
 				document.addEventListener('gest', function(gesture) {
 					if (gesture.left) {
-						$('.slidesjs-previous').trigger('click');
-					} else if (gesture.right) {
 						$('.slidesjs-next').trigger('click');
+					} else if (gesture.right) {
+						$('.slidesjs-previous').trigger('click');
 					}
 				}, false);
 
