@@ -78,7 +78,7 @@ In order to view the video stream and enable <code>console.log(…)</code> messa
 ##v0.5.0 (latest)
 
 - Firefox support (woohoo!)
-- Error handling, all the way back to the stone ages (IE7)
+- Error handling, all the way back to the stone-age (IE7)
 - Better event handling
 - Ability for the developer to define sensitivity
 - A new <code>.options.subscribeWithCallback(...)</code> function
