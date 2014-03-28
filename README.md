@@ -4,6 +4,8 @@ This is a short presentation I gave at MelbJS that summarises gest.js: [http://h
 
 #gest.js IN THE WILD
 
+- Air2048 Tile Game [http://bennettfeely.com/air2048/](http://bennettfeely.com/air2048/) - thanks to [@bennettfeely](http://twitter.com/bennettfeely)
+
 - The University of Connecticut are using gest.js on a large-screen lobby display [http://grad.uconn.edu/lobbydisplay/winter/](http://grad.uconn.edu/lobbydisplay/winter/) - thanks to [@joelsalisbury](http://twitter.com/joelsalisbury)
 
 - Stop the Elves - Christmas game [http://stoptheelves.thirststudios.com/](http://stoptheelves.thirststudios.com/) - thanks again to [@LochieAxo](http://twitter.com/LochieAxo)
