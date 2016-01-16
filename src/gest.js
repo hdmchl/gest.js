@@ -1,7 +1,7 @@
 /* 
  * @name: gest.js
  * @description: gest.js is a webcam based gesture recognition library that helps developers make webpages more immersive
- * @version: 0.5.0
+ * @version: 0.5.1
  * @author: Hadi Michael (http://hadi.io)
  * @acknowledgements: gest.js is an extension of work started by William Wu (https://github.com/wvvvw)
  * @license: MIT License
@@ -600,7 +600,9 @@ window.gest = (function (window) {
 		if (!gestIsInitialised || !userHasAskedToStart) { return false; }
 
 		if (video) { video.src = ''; }
-		return !!stream.stop();
+
+		stream.getTracks()[0].stop();
+		return true;
 	};
 
 	/* @public */
