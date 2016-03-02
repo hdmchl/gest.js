@@ -16,9 +16,9 @@ Are you using gest.js? Please get in touch [@hadi_michael](http://twitter.com/ha
 
 #EXAMPLES
 
-A simple gest.js demo that displays the gesture direction on screen: [http://hadimichael.github.io/gest.js/demos/simple/index.html](http://hadimichael.github.io/gest.js/demos/simple/index.html)
+A simple gest.js demo that displays the gesture direction on screen: [https://hadi.io/gest.js/demos/simple/index.html](https://hadi.io/gest.js/demos/simple/index.html)
 
-Using gest.js to control [Nathan Searles' SlidesJS](http://www.slidesjs.com/): [http://hadimichael.github.io/gest.js/demos/slidesjs/index.html](http://hadimichael.github.io/gest.js/demos/slidesjs/index.html)
+Using gest.js to control [Nathan Searles' SlidesJS](http://www.slidesjs.com/): [https://hadi.io/gest.js/demos/slidesjs/index.html](https://hadi.io/gest.js/demos/slidesjs/index.html)
 
 #USAGE
 
