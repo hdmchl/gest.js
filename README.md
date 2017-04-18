@@ -1,8 +1,8 @@
-#What is gest.js? Check out this presentation from MelbJS
+# What is gest.js? Check out this presentation from MelbJS
 
 This is a short presentation I gave at MelbJS that summarises gest.js: [http://hadimichael.github.io/gestjs-presentation/](http://hadimichael.github.io/gestjs-presentation/)
 
-#gest.js IN THE WILD
+# gest.js IN THE WILD
 
 - Air2048 Tile Game [http://bennettfeely.com/air2048/](http://bennettfeely.com/air2048/) - thanks to [@bennettfeely](http://twitter.com/bennettfeely)
 
@@ -14,24 +14,24 @@ This is a short presentation I gave at MelbJS that summarises gest.js: [http://h
 
 Are you using gest.js? Please get in touch [@hadi_michael](http://twitter.com/hadi_michael)
 
-#EXAMPLES
+# EXAMPLES
 
 A simple gest.js demo that displays the gesture direction on screen: [https://hadi.io/gest.js/demos/simple/index.html](https://hadi.io/gest.js/demos/simple/index.html)
 
 Using gest.js to control [Nathan Searles' SlidesJS](http://www.slidesjs.com/): [https://hadi.io/gest.js/demos/slidesjs/index.html](https://hadi.io/gest.js/demos/slidesjs/index.html)
 
-#USAGE
+# USAGE
 
-##Include the library (gest.js)
+## Include the library (gest.js)
 You will need to include the 'gest.js' library using something like:
 
 <code>&lt;script type="text/javascript" src="gest.min.js"&gt;&lt;/script&gt;</code>
 
-##Start gesture detection
+## Start gesture detection
 You can start gest.js by calling:
 <code>gest.start();</code>
 
-##Listen for recognised gestures
+## Listen for recognised gestures
 
 ### Method 1 (recommended)
 Use the <code>.options.subscribeWithCallback(...)</code> function to listen for gestures:
@@ -48,7 +48,7 @@ You can register an event listener on the <code>document</code> for <code>gest</
 }, false);
 </code></pre>
 
-##How to handle recognised gestures
+## How to handle recognised gestures
 On every event, you will be passed a <code>gesture</code> object that contains:
 
 - <code>.direction</code> the recognised gesture in words as a string
@@ -60,24 +60,24 @@ On every event, you will be passed a <code>gesture</code> object that contains:
 	- <code>.code</code> a code as an int
 	- <code>.message</code> and a message as a string
 
-##Stop gesture detection
+## Stop gesture detection
 You can stop gest.js at any time by calling:
 <code>gest.stop();</code>
 
-##Using Options
+## Using Options
 
-###Sensitivity (80 by default)
+### Sensitivity (80 by default)
 You can specify the degree of colour change that should be used to determine whether or not a pixel has changed. The specified value should range from 0-100, with 100 implying that the slightest change should be enough. You can specify sensitivity using: <code>gest.options.sensitivity(85);</code>
 
-###Skin Filtering (off by default)
+### Skin Filtering (off by default)
 To improve recognition in bright lighting conditions, you can enable HSV skin filtering using: <code>gest.options.skinFilter(true);</code>
 
-###Debugging (off by default)
+### Debugging (off by default)
 In order to view the video stream and enable <code>console.log(…)</code> messages, you will need to toggle debugging using: <code>gest.options.debug(true);</code>
 
-#WHAT'S CHANGED
+# WHAT'S CHANGED
 
-##v0.5.0 (latest)
+## v0.5.0 (latest)
 
 - Firefox support (woohoo!)
 - Error handling, all the way back to the stone-age (IE7)
@@ -87,16 +87,16 @@ In order to view the video stream and enable <code>console.log(…)</code> messa
 - On screen messages is now DEPRECATED. I decided that this is something that the front-end developer should build - it shouldn't be part of the library. If you really want it back, check demo/simple.
 - Locking is now DEPRECATED. It wasn't an elegant enough solution. It might come back in future releases...
 
-#TODO
+# TODO
 - bespoke.js plugin (this is pretty much done, I just need to package it up)
 - Fine tune skin filtering values
 - Include a ready flag... might do this, not sure yet.
 - Bring back the ready message: "The force is strong with you, go forth and gesture."
 
-#Acknowledgements
+# Acknowledgements
 gest.js is an extension of work started by William Wu [https://github.com/willy-vvu](https://github.com/willy-vvu).
 
-#LICENSE (MIT)
+# LICENSE (MIT)
 
 Copyright (c) 2013, Hadi Michael (http://hadi.io)
 
