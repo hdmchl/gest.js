@@ -210,7 +210,7 @@ window.gest = (function (document) {
 					stream = LocalMediaStream;
 
 					window.URL = window.URL || window.webkitURL;
-					video.src = window.URL.createObjectURL(stream);
+					video.srcObject = stream;
 
 					video.addEventListener('canplaythrough',
 						//play the video once it can play through
